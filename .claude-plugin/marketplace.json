@@ -1,0 +1,13 @@
+{
+  "name": "test-marketplace",
+  "owner": {
+    "name": "Toshiyuki Yoshida"
+  },
+  "plugins": [
+    {
+      "name": "magi",
+      "source": "./plugins/magi",
+      "description": "Multi-Agent Governance Intelligence System - Decision support through multi-perspective deliberation"
+    }
+  ]
+}
