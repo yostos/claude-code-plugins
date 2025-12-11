@@ -12,6 +12,16 @@ MAGI is a multi-agent decision-support system that helps you make informed decis
 
 An **ARBITRATOR** agent structures your problem and coordinates the deliberation process, with final decisions made by majority vote.
 
+## Inspiration
+
+This plugin is inspired by the MAGI system from the anime series "Neon Genesis Evangelion". In the series, MAGI is a supercomputer system consisting of three independent units that simulate different aspects of human personality:
+
+- **MELCHIOR** - The scientist's perspective (logic and rationality)
+- **BALTHASAR** - The mother's perspective (protection and ethics)
+- **CASPER** - The woman's perspective (emotion and empathy)
+
+These three systems deliberate and reach decisions through majority vote, enabling multi-faceted judgment by incorporating diverse viewpoints. This plugin adapts that concept to provide comprehensive decision support by analyzing problems from scientific, legal/ethical, and emotional/trend perspectives.
+
 ## Features
 
 - **Multi-perspective analysis**: Get comprehensive insights from scientific, legal, and emotional viewpoints
