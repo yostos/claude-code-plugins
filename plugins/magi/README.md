@@ -259,9 +259,55 @@ Session state can optionally be saved to `state.json`, allowing you to:
 
 This is a personal project. Suggestions and feedback are welcome through issues.
 
+## Troubleshooting
+
+### Plugin not showing in /help
+
+1. Make sure you've restarted Claude Code after installation
+2. Verify the plugin is installed: `/plugin list`
+3. Check the marketplace is properly added: `/plugin marketplace list`
+
+### Agents not starting
+
+- Ensure you have sufficient API quota
+- Check your internet connection (agents need web access)
+- Try restarting the session
+
+### Commands not found
+
+- Verify installation with `/plugin list`
+- Make sure you've restarted Claude Code
+- Check that the plugin name is correct in marketplace.json
+
+### Getting errors during installation
+
+- Use absolute paths when adding the marketplace
+- Ensure the directory structure matches the documented format
+- Check that plugin.json exists in `.claude-plugin/` directory
+
+## FAQ
+
+**Q: Can I use MAGI for non-binary decisions?**
+A: Currently, MAGI is designed for binary choices (Option A vs Option B). For multiple options, you can run multiple MAGI sessions comparing pairs.
+
+**Q: How long does a MAGI analysis take?**
+A: Typically 1-3 minutes, depending on the complexity of the issue and the depth of research required by the agents.
+
+**Q: Can I customize the agents?**
+A: Yes! You can edit the agent files in `agents/` to adjust their characteristics, judgment criteria, and behavioral guidelines.
+
+**Q: What languages are supported?**
+A: The agents primarily output analysis in Japanese (as shown in examples), but they can work with English input. You can modify the agent prompts to change the output language.
+
+**Q: Can I add more agents?**
+A: The system is designed for three agents to enable majority voting. Adding more agents would require modifying the ARBITRATOR logic in the commands.
+
+**Q: Does it save my session history?**
+A: Optionally, yes. The system can save state to `state.json` for resumption, though this feature may need to be enabled in the command implementation.
+
 ## License
 
-[Specify your license here]
+MIT License - See LICENSE file for details
 
 ## Author
 

@@ -1,5 +1,5 @@
 {
-  "name": "test-marketplace",
+  "name": "yostos-marketplace",
   "owner": {
     "name": "Toshiyuki Yoshida"
   },
@@ -8,6 +8,11 @@
       "name": "magi",
       "source": "./plugins/magi",
       "description": "Multi-Agent Governance Intelligence System - Decision support through multi-perspective deliberation"
+    },
+    {
+      "name": "simple-commit",
+      "source": "./plugins/simple-commit",
+      "description": "ステージされた変更を分析してConventional Commits形式のコミットメッセージを自動生成し、コミットを実行"
     }
   ]
 }
