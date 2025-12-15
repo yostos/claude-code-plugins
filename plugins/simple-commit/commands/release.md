@@ -221,6 +221,7 @@ Next steps:
 - **DO** push both commit and tag together
 - **DO NOT** proceed if uncommitted changes exist
 - **DO NOT** include emojis in CHANGELOG entries
+- **DO NOT** add "Generated with Claude Code" or "Co-Authored-By" footers to commits
 - **DO NOT** modify commit history
 
 ## Example Output
