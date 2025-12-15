@@ -1,9 +1,0 @@
-{
-  "name": "simple-commit",
-  "version": "0.1.0",
-  "description": "ステージされた変更を分析してConventional Commits形式のコミットメッセージを自動生成し、コミットを実行",
-  "author": {
-    "name": "yostos"
-  },
-  "keywords": ["git", "commit", "conventional-commits", "automation"]
-}
