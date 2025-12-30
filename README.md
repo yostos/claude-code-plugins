@@ -35,6 +35,20 @@ A sophisticated decision-support system that analyzes problems from multiple per
 
 [View MAGI Documentation](./plugins/magi/README.md)
 
+### simple-commit - Auto-Generated Conventional Commits
+
+A streamlined plugin that analyzes staged changes and automatically generates commit messages in Conventional Commits format.
+
+**Features:**
+- Automatic analysis of staged changes
+- Conventional Commits format (feat:, fix:, docs:, etc.)
+- Learns style from recent commit history
+- Concise messages under 50 characters
+- No emojis or decorations
+- Fast and simple operation
+
+[View simple-commit Documentation](./plugins/simple-commit/README.md)
+
 ## Installation
 
 ### Prerequisites
@@ -72,10 +86,16 @@ For example:
 /plugin marketplace add /Users/username/Desktop/plugin test-marketplace
 ```
 
-4. **Install a plugin:**
+4. **Install plugins:**
 
+Install MAGI plugin:
 ```
 /plugin install magi@test-marketplace
+```
+
+Install simple-commit plugin:
+```
+/plugin install simple-commit@test-marketplace
 ```
 
 When prompted, select "Install now".
@@ -114,6 +134,31 @@ Get help:
 /magi-help
 ```
 
+### simple-commit
+
+Auto-generate and commit with Conventional Commits format:
+
+```bash
+# 1. Stage your changes
+git add .
+
+# 2. Run the commit command
+/commit
+```
+
+The command automatically:
+- Analyzes staged changes
+- Generates appropriate Conventional Commits message
+- Executes the commit
+
+Create a release:
+
+```
+/release
+```
+
+This automates the entire release process including CHANGELOG generation, tagging, and pushing.
+
 ## Development
 
 ### Adding New Plugins
@@ -148,6 +193,16 @@ mkdir -p plugins/your-plugin-name/.claude-plugin
 ```json
 {
   "plugins": [
+    {
+      "name": "magi",
+      "source": "./plugins/magi",
+      "description": "Multi-Agent Governance Intelligence System"
+    },
+    {
+      "name": "simple-commit",
+      "source": "./plugins/simple-commit",
+      "description": "Auto-generate Conventional Commits messages"
+    },
     {
       "name": "your-plugin-name",
       "source": "./plugins/your-plugin-name",
