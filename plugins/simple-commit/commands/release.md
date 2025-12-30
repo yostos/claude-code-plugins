@@ -27,7 +27,18 @@ If output is not empty:
 - Display error: "Error: Uncommitted changes detected. Please commit or stash changes before release."
 - Exit immediately
 
-### 2. Get Previous Tag and Determine New Version
+### 2. Check gh CLI Availability
+
+Check if GitHub CLI is available:
+```bash
+gh --version 2>/dev/null && echo "available" || echo "unavailable"
+```
+
+Store the result for later use:
+- If available: Offer GitHub Release creation option
+- If unavailable: Proceed with Git tag only (traditional workflow)
+
+### 3. Get Previous Tag and Determine New Version
 
 Get the latest tag:
 ```bash
@@ -44,7 +55,7 @@ If previous tag exists (e.g., `v1.0.0`):
 - Suggested version: incremented patch version
 - Commit range: from previous tag to HEAD
 
-### 3. Collect Commits and Filter Article-Related Changes
+### 4. Collect Commits and Filter Article-Related Changes
 
 Get commit list with changed files:
 ```bash
@@ -66,7 +77,7 @@ Example filtering logic:
 - Commit changes `posts/article.md` + `src/utils.ts` → Include
 - Commit changes only `src/auth.ts` → Include
 
-### 4. Generate CHANGELOG Entry
+### 5. Generate CHANGELOG Entry
 
 Group commits by Conventional Commit type:
 
@@ -101,14 +112,14 @@ Format (Keep a Changelog style):
 - If a section has no items, omit that section
 - Date format: ISO 8601 (YYYY-MM-DD)
 
-### 5. Ask User for Version Confirmation
+### 6. Ask User for Version Confirmation
 
 Use AskUserQuestion to confirm version:
 - Show suggested version as default
 - Allow user to submit as-is or provide custom version
 - Validate format: must start with `v` and follow semver (e.g., `v1.2.3`)
 
-### 6. Update CHANGELOG.md
+### 7. Update CHANGELOG.md
 
 Check if CHANGELOG.md exists:
 ```bash
@@ -152,7 +163,7 @@ Example:
 ...
 ```
 
-### 7. Commit CHANGELOG.md
+### 8. Commit CHANGELOG.md
 
 Stage and commit the updated CHANGELOG:
 ```bash
@@ -160,14 +171,14 @@ git add CHANGELOG.md
 git commit -m "chore: update CHANGELOG for vX.Y.Z"
 ```
 
-### 8. Create Git Tag
+### 9. Create Git Tag
 
 Create annotated tag with version:
 ```bash
 git tag -a vX.Y.Z -m "Release vX.Y.Z"
 ```
 
-### 9. Push Changes and Tag
+### 10. Push Changes and Tag
 
 Push both the commit and the tag:
 ```bash
@@ -176,7 +187,39 @@ git push && git push origin vX.Y.Z
 
 Use `&&` to ensure both push operations succeed sequentially.
 
-### 10. Display Success Message
+### 11. Create GitHub Release (Optional)
+
+**Only if `gh` CLI is available (from step 2):**
+
+Ask user if they want to create a GitHub Release:
+- Use AskUserQuestion with options:
+  - "Yes" - Create GitHub Release
+  - "No" - Skip (Git tag only)
+
+**If user chooses "Yes":**
+
+Create GitHub Release with the CHANGELOG entry:
+```bash
+gh release create vX.Y.Z \
+  --title "Release vX.Y.Z" \
+  --notes "$(cat <<'EOF'
+[Insert the generated CHANGELOG entry here without the version header]
+EOF
+)"
+```
+
+**Important:**
+- Use the CHANGELOG content generated in step 5
+- Omit the version header line (`## [X.Y.Z] - YYYY-MM-DD`) from the release notes
+- Include only the categorized changes (Added, Fixed, Changed sections)
+- The release will be automatically published on GitHub
+
+**Verification:**
+```bash
+gh release view vX.Y.Z
+```
+
+### 12. Display Success Message
 
 Show summary:
 ```
@@ -187,10 +230,17 @@ Changes included:
 - Y features added
 - Z bugs fixed
 
-Next steps:
+Completed steps:
 - CHANGELOG.md updated and committed
 - Tag vX.Y.Z created
 - Changes pushed to remote
+- [If created] GitHub Release published
+```
+
+**If GitHub Release was created:**
+Display the release URL:
+```
+GitHub Release: https://github.com/owner/repo/releases/tag/vX.Y.Z
 ```
 
 ## Error Handling
@@ -211,18 +261,30 @@ Next steps:
 - Message: "Error: Failed to push changes. Please check your remote configuration and try: git push && git push origin vX.Y.Z"
 - Tag and commit are created locally but not pushed
 
+**GitHub Release creation fails:**
+- Message: "Warning: Failed to create GitHub Release. The tag vX.Y.Z was created successfully. You can create the release manually with: gh release create vX.Y.Z"
+- Git tag and CHANGELOG are updated successfully
+- User can create the release manually later
+- Common causes:
+  - Not authenticated with GitHub (`gh auth login`)
+  - No permission to create releases
+  - Network issues
+
 ## Important Guidelines
 
 - **DO** verify working directory is clean before starting
+- **DO** check gh CLI availability and offer GitHub Release option when available
 - **DO** filter out article-only commits (posts/, articles/ directories)
 - **DO** preserve existing CHANGELOG.md content
 - **DO** use Keep a Changelog format
 - **DO** create annotated tags (not lightweight tags)
 - **DO** push both commit and tag together
+- **DO** make GitHub Release creation optional (gracefully handle when gh unavailable or user declines)
 - **DO NOT** proceed if uncommitted changes exist
 - **DO NOT** include emojis in CHANGELOG entries
 - **DO NOT** add "Generated with Claude Code" or "Co-Authored-By" footers to commits
 - **DO NOT** modify commit history
+- **DO NOT** require gh CLI (must work without it)
 
 ## Example Output
 
@@ -250,3 +312,7 @@ Next steps:
 - Version numbers follow Semantic Versioning (semver)
 - CHANGELOG follows Keep a Changelog format
 - Process is atomic: if any step fails, previous steps may need manual cleanup
+- GitHub Release creation is optional and requires gh CLI
+- The workflow gracefully degrades to Git tag only when gh is unavailable
+- GitHub Release uses the same CHANGELOG content (without version header)
+- Authentication with GitHub is required for release creation (`gh auth login`)
