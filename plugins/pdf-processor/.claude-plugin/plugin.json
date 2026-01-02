@@ -1,0 +1,11 @@
+{
+  "name": "pdf-processor",
+  "version": "1.0.0",
+  "description": "スキャンPDFのマージ、OCR処理、目次作成を行うツール",
+  "author": {
+    "name": "Toshiyuki Yoshida"
+  },
+  "keywords": ["pdf", "ocr", "pdftk", "automation"],
+  "homepage": "https://github.com/yostos/claude-code-plugins",
+  "repository": "https://github.com/yostos/claude-code-plugins.git"
+}

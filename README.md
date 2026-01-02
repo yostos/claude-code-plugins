@@ -49,6 +49,19 @@ A streamlined plugin that analyzes staged changes and automatically generates co
 
 [View simple-commit Documentation](./plugins/simple-commit/README.md)
 
+### pdf-processor - Scanned PDF Processing Tool
+
+A comprehensive tool for processing scanned PDFs with merge, OCR, and table of contents generation capabilities.
+
+**Features:**
+- PDF merging and preprocessing
+- OCR processing with Tesseract
+- Table of contents creation
+- Bookmark extraction and management
+- Integration with pdftk and gs (Ghostscript)
+
+[View pdf-processor Documentation](./plugins/pdf-processor/README.md)
+
 ## Installation
 
 ### Prerequisites
@@ -96,6 +109,11 @@ Install MAGI plugin:
 Install simple-commit plugin:
 ```
 /plugin install simple-commit@test-marketplace
+```
+
+Install pdf-processor plugin:
+```
+/plugin install pdf-processor@test-marketplace
 ```
 
 When prompted, select "Install now".
@@ -159,6 +177,22 @@ Create a release:
 
 This automates the entire release process including CHANGELOG generation, tagging, and pushing.
 
+### pdf-processor
+
+Preprocess scanned PDFs (merge and OCR):
+
+```
+/preprocess
+```
+
+Apply table of contents to a PDF:
+
+```
+/apply-toc
+```
+
+The plugin guides you through the process of creating and applying bookmarks to your PDF files.
+
 ## Development
 
 ### Adding New Plugins
@@ -202,6 +236,11 @@ mkdir -p plugins/your-plugin-name/.claude-plugin
       "name": "simple-commit",
       "source": "./plugins/simple-commit",
       "description": "Auto-generate Conventional Commits messages"
+    },
+    {
+      "name": "pdf-processor",
+      "source": "./plugins/pdf-processor",
+      "description": "Scanned PDF processing tool"
     },
     {
       "name": "your-plugin-name",
