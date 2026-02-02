@@ -1,0 +1,11 @@
+{
+  "name": "nb-tools",
+  "version": "0.1.0",
+  "description": "Command-line note-taking, bookmarking, and task management with nb",
+  "author": {
+    "name": "Toshiyuki Yoshida"
+  },
+  "keywords": ["nb", "notes", "todo", "markdown", "knowledge-management"],
+  "homepage": "https://github.com/yostos/claude-code-plugins",
+  "repository": "https://github.com/yostos/claude-code-plugins.git"
+}
