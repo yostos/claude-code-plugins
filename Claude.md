@@ -57,6 +57,27 @@ git commit -m "feat: add simple-commit plugin
 Co-Authored-By: Claude Code <noreply@anthropic.com>"
 ```
 
+### Branch Protection
+
+**Direct push to main branch is prohibited**:
+- Always create a feature branch for changes
+- Submit changes via Pull Request
+- Do not push directly to the main branch
+
+**Workflow**:
+```bash
+# Create a feature branch
+git checkout -b feature/your-feature-name
+
+# Make changes and commit
+git add .
+git commit -m "feat: your commit message"
+
+# Push and create PR
+git push -u origin feature/your-feature-name
+gh pr create --title "Your PR title" --body "Description"
+```
+
 ### Pre-Change Verification
 
 Before making any changes:
