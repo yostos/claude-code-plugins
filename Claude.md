@@ -1,5 +1,10 @@
 # Claude Code Plugins Repository - Development Guidelines
 
+## Overview
+
+- **Project Name:** claude-code-plugins
+- **jrnl Project Tag:** claude-code-plugins
+
 Important rules and guidelines when developing Claude Code plugins in this repository.
 
 ## Critical Rules and Guidelines
@@ -14,6 +19,7 @@ Important rules and guidelines when developing Claude Code plugins in this repos
 - ALWAYS include them in version control
 
 **Decision Criteria**:
+
 - If the purpose of a file is unclear, investigate first before suggesting deletion or exclusion
 - `.claude-plugin/` directories inside plugin directories are ALWAYS important
 - Check git history to verify if the file was intentionally added
@@ -22,19 +28,25 @@ Important rules and guidelines when developing Claude Code plugins in this repos
 ### Documentation File Format
 
 **NO Emojis in README.md and CHANGELOG.md**:
+
 - Do not use emojis in README.md or CHANGELOG.md
 - Describe clearly with text only
 - Maintain professional and readable documentation
 
 **Examples**:
+
 ```markdown
 # Good
+
 ## Features
+
 - Automated commit message generation
 - Conventional Commits format support
 
 # Bad
+
 ## Features
+
 - 🚀 Automated commit message generation
 - ✨ Conventional Commits format support
 ```
@@ -42,11 +54,13 @@ Important rules and guidelines when developing Claude Code plugins in this repos
 ### Author Information in Git Commits
 
 **Do NOT include Claude Code as author or co-author**:
+
 - Do not include `Co-Authored-By: Claude` or similar attribution in commit messages
 - Using Claude Code is a personal choice and does not need to be recorded in commit history
 - Commits should be recorded as contributions by individual developers only
 
 **Examples**:
+
 ```bash
 # Good
 git commit -m "feat: add simple-commit plugin"

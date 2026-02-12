@@ -22,9 +22,9 @@ Developers often work on multiple projects in parallel. Claude Code operates on 
 
 ### 2. Session Discontinuity
 
-Claude Code sessions are temporary. When interrupting long work sessions and resuming the next day, you need to re-explain the previous situation.
+Claude Code sessions are temporary. When interrupting long work sessions and resuming the next day, you need to re-explain the previous situation. Project state exists in TODO.md, docs, and code, but the AI needs a starting point to know where to look.
 
-**Problem**: Explaining "how far I got yesterday" every time is inefficient.
+**Problem**: Even when project files exist, the AI doesn't know which files are relevant or what was in progress.
 
 ### 3. Handoff Burden
 
@@ -79,9 +79,24 @@ Investigation results, trial and error, and reasons for decisions are scattered 
 ### Claude Code's Role
 
 1. **Automatic work summarization**: Summarize conversation content on behalf of the user and record to jrnl
-2. **Context save/restore**: Structure and save work state for later restoration
+2. **Session orientation**: Provide handoff notes as a guide to help the next session know where to look in project files (TODO.md, docs, code)
 3. **Cross-project overview**: Retrieve status from multiple projects via jrnl and display unified view
 4. **Natural language operation**: Operate jrnl through natural conversation without knowing commands
+
+### Relationship Between jrnl and Project Documents
+
+```
+Project Documents (primary state)     jrnl (orientation guide)
++---------------------------+         +---------------------------+
+| TODO.md                   |         | Handoff entries           |
+| docs/architecture.md      |  <---   | "Check TODO.md Phase 9,   |
+| CLAUDE.md                 |  guide  |  working on issue #2"     |
+| Source code               |         |                           |
++---------------------------+         +---------------------------+
+       (detailed state)                   (pointer / breadcrumb)
+```
+
+**Key principle**: Project documentation holds the detailed state. Handoff entries are guides that help the next session quickly orient itself — they point to the right files and summarize what was in progress. The handoff does not need to capture everything because the project files persist.
 
 ---
 
@@ -100,8 +115,8 @@ Classify information into "Flow," "Stock," and "Action," and manage with appropr
 - **Work logs**: What was done today, progress status
 - **Investigation records**: What was researched, tried, and results
 - **Thought process**: Why that decision was made, options considered
-- **Handoffs**: What to do next, remaining issues
-- **Context**: Current work state, information at interruption point
+- **Handoffs**: Guide to what to do next, pointers to relevant project files
+- **Session breadcrumbs**: What was in progress, where to resume
 
 ### Information NOT Handled by jrnl
 
@@ -180,6 +195,13 @@ jrnl "Consider adding GraphQL support in future @api @idea"
 - Avoid excessive feature additions
 - Claude adds value through intelligence, not through wrapping every jrnl feature
 
+### 6. Handoff as Guide, Not State Dump
+
+- Handoff entries are **orientation guides** for the next session, not complete state snapshots
+- Detailed state belongs in project files (TODO.md, docs, CLAUDE.md, code)
+- A good handoff points to where to look, not tries to replicate what's already written
+- Users should maintain project documentation alongside jrnl for effective continuity
+
 ### 6. Automatic Project Tagging
 
 - Project tag is automatically assigned based on configuration
@@ -227,5 +249,5 @@ jrnl "Consider adding GraphQL support in future @api @idea"
 |------|------------|
 | Flow Information | Temporary information recorded chronologically. Work logs, thought processes, etc. |
 | Stock Information | Reusable permanent information. Knowledge, procedures, etc. |
-| Context | Current state of work. Information at interruption point, what to do next, etc. |
-| Handoff | Information transfer to future self or others |
+| Context | Current state of work. Primarily lives in project files; handoff provides a guide to locate it. |
+| Handoff | Orientation guide for next session. Points to relevant project files and summarizes what was in progress. |

@@ -72,11 +72,14 @@ Note: Direct editing by Claude is not supported due to jrnl's architecture (edit
 | ID | Requirement | Priority |
 |----|-------------|----------|
 | FR-6.1 | Summarize conversation and save to journal | Must |
-| FR-6.2 | Generate handoff notes for next session | Must |
-| FR-6.3 | Save work session context for later restoration | Must |
-| FR-6.4 | Restore context from previous session | Must |
+| FR-6.2 | Generate handoff notes as orientation guide for next session (referencing project files) | Must |
+| FR-6.3 | Save session pointers (progress summary + file references) for later restoration | Must |
+| FR-6.4 | Restore context from previous session handoff, then follow up on referenced project files | Must |
 | FR-6.5 | Provide cross-project overview from any project | Must |
 | FR-6.6 | Record work logs on user request | Must |
+| FR-6.7 | In git repos, use `git diff --name-only` / `git status` to improve handoff file references | Should |
+| FR-6.8 | In git repos, use `git log --since` / `git status` during restore to detect post-handoff changes | Should |
+| FR-6.9 | Gracefully skip git steps when not in a git repository | Must |
 
 ### FR-7: Cross-Project Visibility
 

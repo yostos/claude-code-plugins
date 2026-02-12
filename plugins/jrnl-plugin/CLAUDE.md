@@ -1,5 +1,7 @@
 # jrnl-tools Plugin - Development Handoff Document
 
+**jrnl Project Tag:** jrnl-plugin
+
 This document provides context for developing the jrnl-tools Claude Code plugin.
 
 ## Background
@@ -115,10 +117,11 @@ jrnl-tools/
 
 ### Key Principles
 
-1. **Read-only**: Never write to journals (safety constraint from jrnl-mcp)
+1. **Append-only**: Create new entries but never delete or edit existing entries programmatically
 2. **Natural language dates**: Leverage jrnl's flexible date parsing
-3. **JSON output**: Use `--export json` for structured data Claude can analyze
+3. **JSON output**: Use `--format json` for structured data Claude can analyze
 4. **Error handling**: Handle cases where jrnl is not installed or configured
+5. **No encryption handling**: Never handle encryption/decryption operations
 
 ### Security Note
 

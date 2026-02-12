@@ -18,6 +18,11 @@
       "name": "pdf-processor",
       "source": "./plugins/pdf-processor",
       "description": "スキャンPDFのマージ、OCR処理、目次作成を行うツール"
+    },
+    {
+      "name": "jrnl-tools",
+      "source": "./plugins/jrnl-plugin",
+      "description": "Claude Code integration with jrnl CLI for intelligent journaling, handoffs, and cross-project context"
     }
   ]
 }
