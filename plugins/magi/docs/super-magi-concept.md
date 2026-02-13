@@ -1,117 +1,133 @@
-# Super MAGI コンセプト
+# Super MAGI - Concept
 
-## 概要
+**Version**: 1.0
+**Date**: 2026-02-13
+**Status**: Approved (see [Concept Inspection](super-magi-concept-inspection.md))
 
-Super MAGIは、MAGIの意思決定支援システムを進化させたものである。従来のMAGIが独立分析と多数決投票に基づくのに対し、Super MAGIは初回投票後に**議論フェーズ**を導入する。Claude CodeのAgent Team機能を活用し、「投票制民主主義」から「審議制民主主義」への移行を実現する。
+---
 
-## 設計原則
+## Related Documents
 
-### ハイブリッドアーキテクチャ
+- [MAGI Specification](magi-specification.md) - Base MAGI system specification
+- [Super MAGI Concept Inspection](super-magi-concept-inspection.md) - MAGI review of this concept
+- [Super MAGI Requirements](super-magi-requirements.md) - Detailed requirements based on this concept
+- [Super MAGI Requirements Inspection](super-magi-requirements-inspection.md) - MAGI review of the requirements
+- [Claude.md](../Claude.md) - Canonical runtime specification (integrated v2.0)
 
-Super MAGIは2つの異なる協調モデルを組み合わせる:
+---
 
-- **独立評価(既存)**: 各エージェントがTask toolを用いて問題を独立に分析する。独立した判断の純粋性を保持する。
-- **議論(新規)**: Agent Teamのメッセージング機能を用いてエージェント間の構造化された議論を行う。少数派の視点が多数派に対して異議を唱えることを可能にする。
+## 1. Overview
 
-### 議論フェーズの発動条件
+Super MAGI is an evolution of the MAGI decision-support system. While the conventional MAGI relies on independent analysis and majority voting, Super MAGI introduces a **deliberation phase** after the initial vote. By leveraging Claude Code's Agent Team feature, it achieves a transition from "voting democracy" to "deliberative democracy".
 
-議論はすべての意思決定で発生するわけではない。初回投票で**意見が割れた(2対1)**場合にのみ発動する。全会一致(3対0)の場合は議論を経ずに最終結論へ進む。
+## 2. Design Principles
 
-この選択的発動により、全会一致の決定には効率性を、意見が割れた決定にはより深い分析を提供する。
+### 2.1 Hybrid Architecture
 
-## 実行フロー
+Super MAGI combines two distinct coordination models:
 
-```
-Phase 1: 問題構造化(変更なし)
-  ARBITRATORがユーザーと対話し、問題を二択形式に整理する。
-  出力: 命題、前提、A案、B案
+- **Independent evaluation (existing)**: Each agent analyzes the problem independently using the Task tool. This preserves the purity of independent judgment.
+- **Deliberation (new)**: Agents engage in structured debate using Agent Team messaging. This allows the minority perspective to challenge the majority.
 
-Phase 2: 独立分析(変更なし)
-  3つのエージェントがTask tool(run_in_background)で独立に分析する。
-  各エージェントがA案またはB案に投票する。
-  エージェント間の通信なし。独立性を保証する。
+### 2.2 Selective Activation
 
-Phase 3: 議論(新規 - 意見が割れた場合のみ)
-  3-1. Agent Teamを作成(TeamCreate)する。
-  3-2. 多数派エージェントが少数派エージェントに意見を提示(SendMessage)する。
-       少数派は初めて多数派の論拠を知る。
-  3-3. 少数派エージェントが多数派の論拠に対する反論を提示(SendMessage)する。
-  3-4. 多数派エージェントが反論に対する見解を提示する。
-  3-5. 少数派エージェントが最終反駁を提示する。
-       少数派に最後の発言権を与え、数的不利に対する公平性を担保する。
-  3-6. 全エージェントが意見を再度まとめ投票する。
+Deliberation does not occur for every decision. It triggers only when the initial vote is **split (2-1)**. Unanimous decisions (3-0) proceed directly to the final conclusion without deliberation.
 
-Phase 4: 最終結論
-  ARBITRATORが投票を集計する(議論が行われた場合は2回目の投票)。
-  完全な推論の経緯とともに最終決定を提示する。
-  Agent Teamを解散(TeamDelete)する。
-```
+This selective activation provides efficiency for unanimous decisions and deeper analysis for contentious ones.
 
-## アーキテクチャ比較
+## 3. Execution Flow
 
 ```
-従来のMAGI:
-  Task ──→ MELCHIOR  ──→ 投票 ──→ 集計 ──→ 結論
-  Task ──→ BALTHASAR ──→ 投票 ─┘
-  Task ──→ CASPER    ──→ 投票 ─┘
+Phase 1: Problem Structuring (unchanged)
+  ARBITRATOR dialogues with the user and structures the problem into binary choice format.
+  Output: Proposition, Prerequisites, Option A, Option B
 
-Super MAGI(意見が割れた場合):
-  Task ──→ MELCHIOR  ──→ 投票 ──→ 集計(2-1)
-  Task ──→ BALTHASAR ──→ 投票 ─┘     │
-  Task ──→ CASPER    ──→ 投票 ─┘     ▼
-                              TeamCreate("super-magi")
-                                      │
-                              少数派 ──SendMessage──→ 多数派
-                              多数派 ──SendMessage──→ 少数派
-                                      │
-                                  再投票 ──→ 最終集計 ──→ 結論
-                                      │
-                              TeamDelete("super-magi")
+Phase 2: Independent Analysis (unchanged)
+  Three agents analyze independently using Task tool (run_in_background).
+  Each agent votes for Option A or Option B.
+  No inter-agent communication. Independence is guaranteed.
+
+Phase 3: Deliberation (new - split decisions only)
+  3-1. Create Agent Team (TeamCreate).
+  3-2. Majority agents present their reasoning to the minority agent (SendMessage).
+       The minority learns the majority's arguments for the first time.
+  3-3. Minority agent presents counterarguments to the majority's reasoning (SendMessage).
+  3-4. Majority agents present their views in response to the counterarguments.
+  3-5. Minority agent presents a final rebuttal.
+       Giving the minority the last word ensures fairness against numerical disadvantage.
+  3-6. All agents consolidate their views and revote.
+
+Phase 4: Final Conclusion
+  ARBITRATOR tallies votes (second vote if deliberation occurred).
+  Presents the final decision with the complete reasoning trail.
+  Dissolves the Agent Team (TeamDelete).
 ```
 
-## 主要な設計判断
+## 4. Architecture Comparison
 
-### 独立性が先、協調性は後
+```
+Conventional MAGI:
+  Task --> MELCHIOR  --> Vote --> Tally --> Conclusion
+  Task --> BALTHASAR --> Vote --+
+  Task --> CASPER    --> Vote --+
 
-議論フェーズは初回分析から厳密に分離される。エージェントは外部の影響なしに初回の意見を形成する。投票が行われた後にのみ議論に参加する。これによりMAGIの核心的な強みである、多様で独立した視点が保持される。
+Super MAGI (when split):
+  Task --> MELCHIOR  --> Vote --> Tally (2-1)
+  Task --> BALTHASAR --> Vote --+     |
+  Task --> CASPER    --> Vote --+     v
+                              TeamCreate("magi-deliberation")
+                                      |
+                              Minority <--SendMessage-- Majority
+                              Majority <--SendMessage-- Minority
+                                      |
+                                  Revote --> Final Tally --> Conclusion
+                                      |
+                              TeamDelete("magi-deliberation")
+```
 
-### 構造化された議論
+## 5. Key Design Decisions
 
-Phase 2では各エージェントは他のエージェントの分析を見ていない。議論フェーズではまず多数派の論拠を少数派に共有することから始め、厳密なプロトコルに従う:
+### 5.1 Independence First, Collaboration Second
 
-1. **多数派の意見提示**: 多数派の各エージェントが、自らの分析と投票理由を少数派に提示する。少数派はここで初めて多数派の論拠を知る。
-2. **少数派の反論**: 少数派エージェントが、多数派の具体的な論拠に対して反論を展開する。
-3. **多数派の再応答**: 多数派の各エージェントが、反論を受けた上での見解を提示する。
-4. **少数派の最終反駁**: 少数派エージェントが最終的な応答を行う。少数派に最後の発言権を与えることで、数的不利に対する公平性を担保する。
-5. **再投票**: 全エージェントが意見を再度まとめ投票する。議論により立場を変える可能性がある。
+The deliberation phase is strictly separated from the initial analysis. Agents form their initial opinions without external influence. Only after voting do they participate in deliberation. This preserves MAGI's core strength: diverse, independent perspectives.
 
-この構造により、非生産的なやり取りを防ぎ、すべての意見が確実に聞かれることを保証する。
+### 5.2 Structured Debate Protocol
 
-### Agent Teamのライフサイクル
+In Phase 2, each agent has no visibility into other agents' analyses. The deliberation phase begins by sharing the majority's reasoning with the minority, then follows a strict protocol:
 
-Agent TeamはPhase 3の間のみ存在する。議論開始時に作成され、終了時に破棄される。これによりリソース使用を最小化し、セッション間の状態漏洩を防ぐ。
+1. **Majority Presentation**: Each majority agent presents their analysis and vote reasoning to the minority. The minority learns the majority's arguments for the first time here.
+2. **Minority Counterargument**: The minority agent develops counterarguments addressing the majority's specific reasoning.
+3. **Majority Response**: Each majority agent presents their views in response to the counterarguments.
+4. **Minority Final Rebuttal**: The minority agent delivers a final response. Giving the minority the last word ensures fairness against numerical disadvantage.
+5. **Revote**: All agents consolidate their views and revote. They may change their position if persuaded.
 
-### 投票変更ルール
+This structure prevents unproductive exchanges and guarantees that all perspectives are heard.
 
-再投票において、エージェントは議論に説得された場合に投票を変更できる。最終結果は2回目の投票集計で決定される。想定される結果:
+### 5.3 Agent Team Lifecycle
 
-- **3対0**: 議論によりコンセンサスが達成された(少数派が説得されたか、多数派を説得した)。
-- **2対1(同一)**: 異議申し立てにもかかわらず多数派が維持された。
-- **2対1(逆転)**: 少数派の議論が多数派の一方を説得し、決定が覆った。
+The Agent Team exists only during Phase 3. It is created at the start of deliberation and destroyed upon completion. This minimizes resource usage and prevents state leakage between sessions.
 
-## 価値提案
+### 5.4 Vote Change Rules
 
-| 観点 | 従来のMAGI | Super MAGI |
-|------|-----------|------------|
-| 意思決定モデル | 投票制民主主義 | 審議制民主主義 |
-| 意見が割れた決定 | そのまま受容 | 議論を通じて検証 |
-| 少数派の声 | 記録されるが受動的 | 能動的な反論 |
-| 決定の確信度 | 投票数のみ | 投票数 + 議論の経緯 |
-| 効率性 | 高速(単一ラウンド) | 全会一致は高速、意見分裂時は精密 |
+In the revote, agents may change their vote if persuaded by the deliberation. The final result is determined by the second vote tally. Expected outcomes:
 
-## 範囲と制約
+- **3-0**: Consensus achieved through deliberation (minority was persuaded or persuaded the majority).
+- **2-1 (same)**: Majority maintained despite the challenge.
+- **2-1 (reversed)**: The minority's arguments persuaded one majority agent, reversing the decision.
 
-- Super MAGIは必要な場合(意見が割れた決定)にのみ複雑性を追加する。
-- 議論フェーズはレイテンシを追加するが、意見が割れた決定にはより深い分析が求められるため許容される。
-- Agent Teamのメッセージングは構造化された議論のみに使用し、汎用的な協調には使用しない。
-- ARBITRATORは一貫して中立を維持し、議論には参加しない。
+## 6. Value Proposition
+
+| Aspect | Conventional MAGI | Super MAGI |
+|---|---|---|
+| Decision model | Voting democracy | Deliberative democracy |
+| Split decisions | Accepted as-is | Challenged through debate |
+| Minority voice | Recorded passively | Active counterargument |
+| Decision confidence | Vote count only | Vote count + deliberation trail |
+| Efficiency | Fast (single round) | Fast for unanimous, thorough for split |
+
+## 7. Scope and Constraints
+
+- Super MAGI adds complexity only when needed (split decisions).
+- The deliberation phase adds latency, but this is acceptable since split decisions warrant deeper analysis.
+- Agent Team messaging is used exclusively for structured debate, not general-purpose collaboration.
+- ARBITRATOR consistently maintains neutrality and does not participate in deliberation.

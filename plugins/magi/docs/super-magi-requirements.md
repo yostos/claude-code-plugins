@@ -7,6 +7,16 @@
 
 ---
 
+## Related Documents
+
+- [MAGI Specification](magi-specification.md) - Base MAGI system specification
+- [Super MAGI Concept](super-magi-concept.md) - Design concept for the deliberation phase
+- [Super MAGI Concept Inspection](super-magi-concept-inspection.md) - MAGI review of the concept
+- [Super MAGI Requirements Inspection](super-magi-requirements-inspection.md) - MAGI review of this requirements document
+- [Claude.md](../Claude.md) - Canonical runtime specification (integrated v2.0)
+
+---
+
 ## 1. Introduction
 
 ### 1.1 Purpose
@@ -281,11 +291,11 @@ After collecting all Phase 2 results:
 - Describe the 2-1 split trigger condition
 - Explain the 4-round debate protocol
 
-#### 5.1.4 `SPECIFICATION.md`
+#### 5.1.4 `docs/magi-specification.md`
 
 **Changes**:
-- Update Japanese specification to include Phase 3 deliberation
-- Mirror changes from Claude.md
+- Add note referencing Super MAGI requirements for the extended execution flow
+- Maintain consistency with Claude.md
 
 ### 5.2 Files to Create
 
@@ -710,5 +720,5 @@ This provides natural opt-in behavior without configuration.
 At release:
 - Update README.md with deliberation phase description
 - Update Claude.md with full Phase 3 specification
-- Update SPECIFICATION.md (Japanese mirror)
+- Update docs/magi-specification.md with cross-reference to Super MAGI requirements
 - Update magi-help.md command output

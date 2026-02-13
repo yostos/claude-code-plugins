@@ -7,6 +7,15 @@
 
 ---
 
+## Related Documents
+
+- [MAGI Specification](magi-specification.md) - Base MAGI system specification
+- [Super MAGI Concept](super-magi-concept.md) - Design concept for the deliberation phase
+- [Super MAGI Concept Inspection](super-magi-concept-inspection.md) - MAGI review of the concept
+- [Super MAGI Requirements](super-magi-requirements.md) - The requirements document reviewed here
+
+---
+
 ## Problem Structure (ARBITRATOR)
 
 ```

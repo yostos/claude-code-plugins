@@ -573,10 +573,16 @@ magi/
 │   ├── melchior.md              # MELCHIOR agent definition
 │   ├── balthasar.md             # BALTHASAR agent definition
 │   └── casper.md                # CASPER agent definition
+├── docs/                        # Specification and reference documents
+│   ├── magi-specification.md    # Base MAGI specification
+│   ├── super-magi-concept.md    # Super MAGI concept
+│   ├── super-magi-concept-inspection.md
+│   ├── super-magi-requirements.md
+│   └── super-magi-requirements-inspection.md
 ├── .gitignore                   # Ignore state files
+├── CHANGELOG.md                 # Version history
 ├── Claude.md                    # This specification file
-├── README.md                    # Project documentation
-└── SPECIFICATION.md             # Japanese specification (backup)
+└── README.md                    # Project documentation
 ```
 
 ### Slash Commands

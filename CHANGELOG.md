@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-02-13
+
+### Added
+- MAGI plugin v2.0.0: deliberation phase (Super MAGI) with structured debate and revoting when votes split 2-1
+- MAGI plugin: CHANGELOG.md and specification documents in `docs/`
+
+### Changed
+- MAGI plugin: all documentation consolidated in English with FR/NFR requirements format
+- Root README updated with MAGI deliberation phase and Agent Teams prerequisites
+
 ## [0.5.0] - 2026-02-13
 
 ### Added

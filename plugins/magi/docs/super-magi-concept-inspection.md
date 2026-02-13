@@ -7,6 +7,15 @@
 
 ---
 
+## Related Documents
+
+- [MAGI Specification](magi-specification.md) - Base MAGI system specification
+- [Super MAGI Concept](super-magi-concept.md) - The concept document reviewed here
+- [Super MAGI Requirements](super-magi-requirements.md) - Requirements definition based on this concept
+- [Super MAGI Requirements Inspection](super-magi-requirements-inspection.md) - MAGI review of the requirements
+
+---
+
 ## Problem Structure (ARBITRATOR)
 
 ```
