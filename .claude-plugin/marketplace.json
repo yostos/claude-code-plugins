@@ -12,12 +12,12 @@
     {
       "name": "simple-commit",
       "source": "./plugins/simple-commit",
-      "description": "ステージされた変更を分析してConventional Commits形式のコミットメッセージを自動生成し、コミットを実行"
+      "description": "Analyze staged changes and auto-generate Conventional Commits messages"
     },
     {
       "name": "pdf-processor",
       "source": "./plugins/pdf-processor",
-      "description": "スキャンPDFのマージ、OCR処理、目次作成を行うツール"
+      "description": "Merge, OCR, and table of contents generation for scanned PDFs"
     },
     {
       "name": "jrnl-tools",

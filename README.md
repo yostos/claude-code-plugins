@@ -1,5 +1,9 @@
 # Claude Code Plugins
 
+[![GitHub Release](https://img.shields.io/github/v/release/yostos/claude-code-plugins)](https://github.com/yostos/claude-code-plugins/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Plugins](https://img.shields.io/badge/plugins-5-green.svg)](#plugins)
+
 A collection of plugins that extend Claude Code with decision support, journaling, commit automation, and PDF processing.
 
 ## Plugins
