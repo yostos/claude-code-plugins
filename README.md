@@ -10,7 +10,9 @@ A collection of plugins that extend Claude Code with decision support, journalin
 
 ### MAGI - Multi-Agent Decision Support
 
-Analyzes problems from three independent perspectives -- scientific/technical, legal/ethical, and emotional/trend -- then synthesizes them into a structured recommendation with majority voting.
+Analyzes problems from three independent perspectives -- scientific/technical, legal/ethical, and emotional/trend -- then synthesizes them into a structured recommendation with majority voting. When opinions split 2-1, an optional deliberation phase enables structured debate between agents before revoting.
+
+The deliberation phase uses Agent Teams (experimental, requires Max plan as of February 2026, disabled by default). See the [MAGI documentation](./plugins/magi/README.md) for setup instructions. Without it, the plugin still works with standard majority voting.
 
 Useful when you need to evaluate trade-offs from multiple angles before making a decision.
 

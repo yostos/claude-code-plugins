@@ -10,7 +10,7 @@ MAGI is a multi-agent decision-support system that helps you make informed decis
 - **BALTHASAR**: Legal and ethical analysis
 - **CASPER**: Emotional and trend analysis
 
-An **ARBITRATOR** agent structures your problem and coordinates the deliberation process, with final decisions made by majority vote.
+An **ARBITRATOR** agent structures your problem and coordinates the deliberation process, with final decisions made by majority vote. When votes split 2-1, an optional deliberation phase enables structured debate between majority and minority agents before a revote, evolving from voting democracy to deliberative democracy.
 
 ## Inspiration
 
@@ -27,9 +27,10 @@ These three systems deliberate and reach decisions through majority vote, enabli
 - **Multi-perspective analysis**: Get comprehensive insights from scientific, legal, and emotional viewpoints
 - **Parallel agent execution**: Three agents analyze independently and simultaneously
 - **Structured decision-making**: Problems are organized into clear propositions with defined options
+- **Deliberative democracy**: When opinions split 2-1, a structured deliberation phase allows agents to debate and potentially change their votes
 - **Evidence-based**: Agents use web search to gather current information, laws, trends, and data
 - **Session management**: Work can be interrupted and resumed at any time
-- **Transparent process**: See each agent's reasoning and references
+- **Transparent process**: See each agent's reasoning, references, and vote transitions
 
 ## Installation
 
@@ -37,6 +38,22 @@ These three systems deliberate and reach decisions through majority vote, enabli
 
 - [Claude Code CLI](https://claude.com/claude-code) installed and configured
 - Internet connection (for agent web searches)
+- **Agent Teams enabled** (required for the deliberation phase):
+  Agent Teams is an experimental feature and disabled by default. To enable it, add the following to your `settings.json`:
+  ```json
+  {
+    "env": {
+      "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+    }
+  }
+  ```
+  Alternatively, set it as a shell environment variable:
+  ```bash
+  export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
+  ```
+  For more details, see the [Agent Teams documentation](https://code.claude.com/docs/en/agent-teams).
+
+  Note: Without Agent Teams enabled, the plugin still works but the deliberation phase (Phase 3) will not be available. Split votes will proceed directly to final arbitration.
 
 ### Local Installation
 
@@ -148,10 +165,10 @@ Displays comprehensive information about the system, agents, and usage.
 ARBITRATOR engages with you to:
 - Understand your decision-making challenge
 - Structure it into a clear format with:
-  - **命題 (Proposition)**: The question to be answered
-  - **前提 (Prerequisites)**: Conditions and constraints
-  - **A案 (Option A)**: First choice
-  - **B案 (Option B)**: Second choice
+  - **Proposition**: The question to be answered
+  - **Prerequisites**: Conditions and constraints
+  - **Option A**: First choice
+  - **Option B**: Second choice
 
 ### Phase 2: Parallel Analysis
 
@@ -168,17 +185,40 @@ Each agent:
 - Provides detailed reasoning
 - Documents all references
 
-### Phase 3: Final Arbitration
+### Phase 2.5: Vote Analysis and Deliberation Decision
+
+ARBITRATOR tallies the initial votes:
+- **3-0 (unanimous)**: Skip deliberation, proceed directly to Phase 4
+- **2-1 (split)**: Display initial vote results and ask you whether to enter the deliberation phase
+- If you decline deliberation, proceed to Phase 4 with the Phase 2 votes
+
+### Phase 3: Deliberation (Conditional)
+
+When votes split 2-1 and you approve deliberation, a structured debate takes place:
+
+1. ARBITRATOR creates an Agent Team for the deliberation
+2. 4-round structured debate:
+   - **Round 1**: Majority agents present their arguments to the minority agent
+   - **Round 2**: Minority agent sends counterarguments to both majority agents
+   - **Round 3**: Majority agents respond to the counterarguments
+   - **Round 4**: Minority agent sends final rebuttal (guaranteed last word)
+3. All three agents cast a revote with updated reasoning
+4. ARBITRATOR collects revote results and dissolves the team
+
+### Phase 4: Final Arbitration
 
 ARBITRATOR:
-- Collects all three votes
+- Tallies the final votes (revotes if deliberation occurred, Phase 2 votes otherwise)
 - Determines the outcome by majority decision
 - Presents a comprehensive summary including:
-  - Vote tally
+  - Vote tally (and vote transitions if deliberation occurred)
   - Each agent's reasoning
+  - Deliberation summary (if applicable)
   - All references and sources used
 
 ## Example Output
+
+### Unanimous Decision (3-0)
 
 ```
 【MAGI システム 最終結論】
@@ -194,6 +234,31 @@ ARBITRATOR:
 
 結論の要約:
 [Summary of the decision with key points from each perspective]
+
+参照情報:
+[All sources, laws, trends, and data consulted by the agents]
+```
+
+### Split Decision with Deliberation (2-1)
+
+```
+【MAGI システム 最終結論】
+
+初回投票: A案 2票 vs B案 1票
+再投票:   A案 1票 vs B案 2票
+
+採択: B案
+
+投票推移:
+- MELCHIOR: A案 → B案 - 議論を通じてコスト分析の前提を修正
+- BALTHASAR: A案 → A案 - 立場維持
+- CASPER: B案 → B案 - 立場維持
+
+議論の要約:
+[Summary of key arguments exchanged during deliberation]
+
+結論の要約:
+[Final conclusion integrating insights from both voting rounds and deliberation]
 
 参照情報:
 [All sources, laws, trends, and data consulted by the agents]
@@ -217,15 +282,17 @@ workspace/                      # Project root
         │   ├── melchior.md    # Scientific/Technical analysis
         │   ├── balthasar.md   # Legal/Ethical analysis
         │   └── casper.md      # Emotional/Trend analysis
+        ├── docs/               # Specification and reference documents
         ├── Claude.md          # Complete system specification
-        ├── README.md          # This file
-        └── SPECIFICATION.md   # Japanese specification (backup)
+        ├── CHANGELOG.md       # Version history
+        └── README.md          # This file
 ```
 
 ## Documentation
 
 - **Claude.md**: Complete specification including agent characteristics, execution flow, and implementation details
 - **agents/*.md**: Individual agent definitions with their roles, characteristics, and behavioral guidelines
+- **docs/**: Specification and reference documents including base MAGI specification, Super MAGI concept, and requirements
 
 ## Features in Detail
 
@@ -239,6 +306,14 @@ Agents actively use web search to find:
 - Latest technical data and benchmarks (MELCHIOR)
 - Current laws, regulations, and precedents (BALTHASAR)
 - Trends, user experiences, and innovations (CASPER)
+
+### Deliberation Phase
+
+When votes split 2-1, you can choose to enter a structured deliberation phase:
+- Majority and minority agents engage in a 4-round structured debate
+- The minority agent is guaranteed the last word for procedural fairness
+- Agents may change their vote after deliberation if persuaded by arguments
+- If errors occur during deliberation, the system gracefully falls back to Phase 2 votes
 
 ### Interruption & Resumption
 
@@ -254,6 +329,7 @@ Session state can optionally be saved to `state.json`, allowing you to:
 - Claude Code CLI (latest version recommended)
 - Internet connection for agent web searches
 - Sufficient API quota for parallel agent execution
+- Agent Teams experimental feature enabled (for deliberation phase)
 
 ## Contributing
 
@@ -273,6 +349,12 @@ This is a personal project. Suggestions and feedback are welcome through issues.
 - Check your internet connection (agents need web access)
 - Try restarting the session
 
+### Deliberation phase not activating
+
+- Verify that Agent Teams is enabled (see Prerequisites)
+- The deliberation phase only activates when votes split 2-1
+- You must explicitly approve entering the deliberation phase when prompted
+
 ### Commands not found
 
 - Verify installation with `/plugin list`
@@ -291,7 +373,16 @@ This is a personal project. Suggestions and feedback are welcome through issues.
 A: Currently, MAGI is designed for binary choices (Option A vs Option B). For multiple options, you can run multiple MAGI sessions comparing pairs.
 
 **Q: How long does a MAGI analysis take?**
-A: Typically 1-3 minutes, depending on the complexity of the issue and the depth of research required by the agents.
+A: Typically 1-3 minutes for the initial analysis. If the deliberation phase is triggered, it may take an additional 2-4 minutes for the structured debate and revote.
+
+**Q: What happens when votes split 2-1?**
+A: ARBITRATOR displays the initial vote results and asks whether you want to enter the deliberation phase. If you approve, the majority and minority agents engage in a 4-round structured debate, then revote. If you decline, the system proceeds directly to final arbitration with the initial votes.
+
+**Q: Can agents change their votes during deliberation?**
+A: Yes. After the 4-round debate, all three agents cast a revote. They may change their position if persuaded by the arguments presented during deliberation.
+
+**Q: What if the deliberation phase encounters an error?**
+A: The system gracefully falls back to the Phase 2 votes and proceeds to final arbitration. No data is lost.
 
 **Q: Can I customize the agents?**
 A: Yes! You can edit the agent files in `agents/` to adjust their characteristics, judgment criteria, and behavioral guidelines.
@@ -305,6 +396,9 @@ A: The system is designed for three agents to enable majority voting. Adding mor
 **Q: Does it save my session history?**
 A: Optionally, yes. The system can save state to `state.json` for resumption, though this feature may need to be enabled in the command implementation.
 
+**Q: Do I need Agent Teams enabled for basic usage?**
+A: No. Without Agent Teams, MAGI still performs the three-agent analysis and majority voting (Phases 1, 2, and 4). Only the deliberation phase (Phase 3) requires Agent Teams.
+
 ## License
 
 MIT License - See LICENSE file for details
@@ -315,8 +409,9 @@ Toshiyuki Yoshida
 
 ## Version
 
-1.0.0
+2.0.0
 
 ## Update History
 
-- 2024-12-11: Initial implementation of Claude Code plugin
+- 2026-02-13: v2.0.0 - Added deliberation phase (Super MAGI) with structured debate and revoting
+- 2024-12-11: v1.0.0 - Initial implementation of Claude Code plugin

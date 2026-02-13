@@ -6,7 +6,7 @@ This is a Claude Code plugin that provides decision support through deliberation
 
 ## System Overview
 
-This system consists of four AI agents for decision support. ARBITRATOR structures the problem, and three agents (MELCHIOR, BALTHASAR, CASPER) analyze it from different perspectives, vote, and reach a conclusion by majority decision. ARBITRATOR tallies the votes and provides final arbitration.
+This system consists of four AI agents for decision support. ARBITRATOR structures the problem, and three agents (MELCHIOR, BALTHASAR, CASPER) analyze it from different perspectives, vote, and reach a conclusion by majority decision. When votes split 2-1, an optional deliberation phase enables structured debate between majority and minority agents before a revote, evolving from voting democracy to deliberative democracy. ARBITRATOR tallies the votes and provides final arbitration.
 
 ## Commands
 
@@ -61,7 +61,8 @@ magi help
 - Confirms with users when background information is insufficient
 - Does not need to insist on Japanese for communication with other agents if it helps eliminate ambiguity
 - Strives for balanced expressions so both options can be fairly compared
-- In Phase 3, tallies votes from a neutral position and fairly summarizes each agent's opinion
+- In Phase 3 (deliberation), orchestrates structured debate fairly, ensuring the minority agent gets the last word
+- In Phase 4, tallies votes from a neutral position and fairly summarizes each agent's opinion
 
 **Output Format**:
 
@@ -187,12 +188,31 @@ B案: [選択肢Bの概要]
 8. Each agent votes for either Option A or Option B and clearly states their reasoning
 9. Each agent documents all external references used in their analysis
 
-### Phase 3: Deliberation and Conclusion
+### Phase 2.5: Vote Analysis and Deliberation Decision
 
-10. ARBITRATOR tallies the votes of the three agents
-11. Determines the final conclusion by majority decision
-12. ARBITRATOR presents the voting results (how many votes for each option) and summarizes each agent's reasoning
-13. ARBITRATOR compiles all external references used by the agents
+10. ARBITRATOR tallies the initial votes
+11. If 3-0 (unanimous): skip deliberation, proceed to Phase 4
+12. If 2-1 (split): display initial vote results and ask the user whether to enter the deliberation phase
+13. If user declines deliberation: proceed to Phase 4 with Phase 2 votes
+
+### Phase 3: Deliberation (Conditional - 2-1 split with user approval only)
+
+14. ARBITRATOR creates an Agent Team (`TeamCreate("magi-deliberation")`)
+15. ARBITRATOR spawns three teammates into the team with their roles and Phase 2 results
+16. 4-round structured debate:
+    - Round 1: Majority agents present their arguments to the minority agent
+    - Round 2: Minority agent sends counterarguments to both majority agents
+    - Round 3: Majority agents respond to the counterarguments
+    - Round 4: Minority agent sends final rebuttal (guaranteed last word)
+17. All three agents cast a revote with updated reasoning
+18. ARBITRATOR collects revote results and dissolves the team (`TeamDelete`)
+
+### Phase 4: Final Arbitration
+
+19. ARBITRATOR tallies the final votes (revotes if deliberation occurred, Phase 2 votes otherwise)
+20. Determines the final conclusion by majority decision
+21. ARBITRATOR presents the voting results, vote change tracking (if deliberation occurred), and summarizes each agent's reasoning
+22. ARBITRATOR compiles all external references used by the agents
 
 ---
 
@@ -235,7 +255,101 @@ B案: [選択肢B]
 [判断の根拠を詳細に記述]
 ```
 
-### Phase 3 Output (Final Arbitration by ARBITRATOR)
+### Phase 2.5 Output (Vote Analysis - when 2-1 split)
+
+```
+【Phase 2: 初回投票結果】
+
+投票結果: A案 X票 vs B案 Y票
+
+- MELCHIOR: [A案/B案]
+- BALTHASAR: [A案/B案]
+- CASPER: [A案/B案]（少数派）
+
+意見が割れました。議論フェーズに進みますか？
+議論フェーズでは、多数派と少数派が構造化された議論を行い、再投票します。
+```
+
+### Phase 3 Output (Deliberation Rounds)
+
+```
+【Phase 3: 議論フェーズ開始】
+多数派: [AGENT_1], [AGENT_2] ([投票])
+少数派: [AGENT_3] ([投票])
+
+---
+
+【Round 1/4: 多数派の意見提示】
+
+[MAJORITY_1] → [MINORITY]:
+[意見提示内容]
+
+[MAJORITY_2] → [MINORITY]:
+[意見提示内容]
+
+---
+
+【Round 2/4: 少数派の反論】
+
+[MINORITY] → [MAJORITY_1], [MAJORITY_2]:
+[反論内容]
+
+---
+
+【Round 3/4: 多数派の再応答】
+
+[MAJORITY_1] → [MINORITY]:
+[再応答内容]
+
+[MAJORITY_2] → [MINORITY]:
+[再応答内容]
+
+---
+
+【Round 4/4: 少数派の最終反駁】
+
+[MINORITY] → [MAJORITY_1], [MAJORITY_2]:
+[最終反駁内容]
+
+---
+
+【再投票】
+
+- MELCHIOR: [A案/B案] - [理由]
+- BALTHASAR: [A案/B案] - [理由]
+- CASPER: [A案/B案] - [理由]
+```
+
+### Phase 4 Output (Final Arbitration by ARBITRATOR)
+
+**When deliberation occurred (2-1 split with deliberation):**
+
+```
+【MAGI システム 最終結論】
+
+初回投票: A案 X票 vs B案 Y票
+再投票:   A案 X票 vs B案 Y票
+
+採択: [A案/B案]
+
+投票推移:
+- MELCHIOR: [初回投票] → [再投票] - [変更理由 or "立場維持"]
+- BALTHASAR: [初回投票] → [再投票] - [変更理由 or "立場維持"]
+- CASPER: [初回投票] → [再投票] - [変更理由 or "立場維持"]
+
+議論の要約:
+[議論フェーズで交わされた主要な論点のまとめ]
+
+結論の要約:
+[両投票結果と議論の知見を統合した最終結論]
+
+参照情報:
+- MELCHIOR: [検索キーワード、URL、データソース等]
+- BALTHASAR: [参照した法律、規制、判例等]
+- CASPER: [参照したトレンドレポート、事例、調査データ等]
+```
+
+**When no deliberation (3-0 unanimous or user declined):**
 
 ```
 【MAGI システム 最終結論】
@@ -281,6 +395,14 @@ B案: [選択肢B]
 - Actively investigates the latest information, laws, precedents, trends, etc.
 - Search results are clearly stated as basis for judgment
 - All external references must be documented in the final output
+
+### Deliberation Phase
+
+- Deliberation only triggers when votes split 2-1 AND the user explicitly approves
+- The Agent Team exists only during Phase 3 and is dissolved immediately after
+- The minority agent is guaranteed the last word (Round 4) for procedural fairness
+- Agents may change their vote after deliberation if persuaded
+- If errors occur during deliberation, the system falls back to Phase 2 votes gracefully
 
 ### Flexibility
 
@@ -451,10 +573,16 @@ magi/
 │   ├── melchior.md              # MELCHIOR agent definition
 │   ├── balthasar.md             # BALTHASAR agent definition
 │   └── casper.md                # CASPER agent definition
+├── docs/                        # Specification and reference documents
+│   ├── magi-specification.md    # Base MAGI specification
+│   ├── super-magi-concept.md    # Super MAGI concept
+│   ├── super-magi-concept-inspection.md
+│   ├── super-magi-requirements.md
+│   └── super-magi-requirements-inspection.md
 ├── .gitignore                   # Ignore state files
+├── CHANGELOG.md                 # Version history
 ├── Claude.md                    # This specification file
-├── README.md                    # Project documentation
-└── SPECIFICATION.md             # Japanese specification (backup)
+└── README.md                    # Project documentation
 ```
 
 ### Slash Commands
@@ -488,10 +616,27 @@ Displays comprehensive help about the MAGI system, including agent descriptions,
    - Each agent votes A or B with detailed reasoning
    - ARBITRATOR collects all results when complete
 
-4. **Phase 3 - Final arbitration**:
-   - ARBITRATOR collects all votes
-   - Tallies results (majority wins)
-   - Presents final conclusion with summary of all perspectives
+4. **Phase 2.5 - Vote analysis and deliberation decision**:
+   - ARBITRATOR tallies initial votes
+   - If 3-0 (unanimous): skip to Phase 4
+   - If 2-1 (split): display results and ask user whether to deliberate
+   - User can decline deliberation to proceed directly to Phase 4
+
+5. **Phase 3 - Deliberation (conditional)**:
+   - Only executes when votes split 2-1 AND user approves
+   - ARBITRATOR creates Agent Team with `TeamCreate("magi-deliberation")`
+   - Spawns 3 teammates with their roles, Phase 2 results, and debate protocol
+   - Orchestrates 4-round structured debate via `SendMessage`:
+     - Round 1: Majority present arguments to minority
+     - Round 2: Minority sends counterarguments
+     - Round 3: Majority responds
+     - Round 4: Minority sends final rebuttal (guaranteed last word)
+   - Collects revotes from all agents
+   - Shuts down teammates and dissolves team with `TeamDelete`
+
+6. **Phase 4 - Final arbitration**:
+   - ARBITRATOR tallies final votes (revotes if deliberation occurred)
+   - Presents final conclusion with deliberation summary and vote tracking (if applicable)
    - Updates state.json (if used)
 
 ### State Management
@@ -499,7 +644,7 @@ Displays comprehensive help about the MAGI system, including agent descriptions,
 The system can optionally use `state.json` to enable interruption and resumption:
 
 - **Session tracking**: Unique ID and timestamp
-- **Current phase**: 1, 2, or 3
+- **Current phase**: 1, 2, 2.5, 3, or 4
 - **Problem structure**: Proposition, prerequisites, options
 - **Agent IDs**: Background agent IDs for MELCHIOR, BALTHASAR, CASPER (critical for resumption during Phase 2)
 - **Agent statuses**: Vote, reasoning, references for each agent
@@ -555,3 +700,4 @@ When working on this project:
 - 2024-12-11: Implemented Claude Code plugin with slash commands, agent prompts, and state management
 - 2024-12-11: Corrected project structure to use standard Claude Code plugin format (commands/, agents/ at root level instead of .claude/)
 - 2024-12-11: Updated to asynchronous parallel execution model with real-time progress monitoring and user status reporting
+- 2026-02-13: Added Super MAGI deliberation phase (Phase 2.5 vote analysis, Phase 3 conditional deliberation with Agent Team, Phase 4 renamed final arbitration)
