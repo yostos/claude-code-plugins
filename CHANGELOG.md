@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-02-13
+
+### Added
+- jrnl-plugin for intelligent journaling with jrnl CLI integration
+  - Session handoff and context restore commands
+  - Cross-project status overview
+  - Work log recording
+  - Natural language journal interaction via skill
+- Auto Memory vs jrnl Handoff comparative analysis document
+
+### Changed
+- Rewrite top-level README for clarity and conciseness
+
 ## [0.4.0] - 2026-01-02
 
 ### Added
