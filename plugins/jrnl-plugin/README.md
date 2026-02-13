@@ -71,6 +71,19 @@ This tag is automatically applied to all journal entries.
 | `@handoff` | Future context (for next session) |
 | `@idea` | Ideas for uncertain future |
 
+## Relationship with Auto Memory
+
+Auto Memory (`~/.claude/projects/<project>/memory/`), introduced in Claude Code v2.1.32, automatically persists **stable knowledge** such as project patterns and settings across sessions. In contrast, jrnl-plugin handles **chronological work records** (work logs, handoffs, ideas).
+
+| | Auto Memory | jrnl-plugin |
+|---|---|---|
+| Information type | Stable knowledge (Stock) | Chronological records (Flow) |
+| Scope | Single project | Cross-project |
+| Operation | Automatic (no explicit action needed) | Explicit (command execution) |
+| Access | Within Claude Code | Independently accessible via jrnl CLI |
+
+The two are complementary, not competing. Auto Memory remembers "project conventions," while jrnl records "what was done today and what to do tomorrow." See [Comparative Analysis: Auto Memory vs jrnl Handoff](docs/auto-memory-vs-jrnl-handoff.md) for details.
+
 ## Documentation
 
 - [Usage Guide](docs/usage-guide.md) - Scenarios and workflows

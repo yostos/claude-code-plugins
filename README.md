@@ -1,290 +1,61 @@
-# Claude Code Plugins Repository
+# Claude Code Plugins
 
-A collection of custom plugins for Claude Code CLI, featuring advanced multi-agent systems and productivity tools.
+A collection of plugins that extend Claude Code with decision support, journaling, commit automation, and PDF processing.
 
-## Overview
+## Plugins
 
-This repository serves as a local marketplace for Claude Code plugins. It provides a structured way to develop, organize, and distribute custom plugins that extend Claude Code's capabilities.
+### MAGI - Multi-Agent Decision Support
 
-## Repository Structure
+Analyzes problems from three independent perspectives -- scientific/technical, legal/ethical, and emotional/trend -- then synthesizes them into a structured recommendation with majority voting.
 
-```
-plugin/
-├── .claude-plugin/
-│   └── marketplace.json        # Marketplace configuration
-├── plugins/                    # Plugin collection
-│   └── magi/                  # MAGI plugin
-│       ├── .claude-plugin/
-│       ├── commands/
-│       ├── agents/
-│       └── ...
-└── README.md                  # This file
-```
+Useful when you need to evaluate trade-offs from multiple angles before making a decision.
 
-## Available Plugins
+[Documentation](./plugins/magi/README.md)
 
-### MAGI - Multi-Agent Governance Intelligence System
+### simple-commit - Conventional Commits Automation
 
-A sophisticated decision-support system that analyzes problems from multiple perspectives using specialized AI agents.
+Reads your staged changes and generates a commit message in Conventional Commits format. Also automates the release process (CHANGELOG generation, tagging, push).
 
-**Features:**
-- Multi-perspective analysis (scientific, legal, emotional)
-- Parallel agent execution
-- Evidence-based decision making with web search
-- Structured deliberation process with majority voting
+Eliminates the friction of writing commit messages while keeping them consistent.
 
-[View MAGI Documentation](./plugins/magi/README.md)
+[Documentation](./plugins/simple-commit/README.md)
 
-### simple-commit - Auto-Generated Conventional Commits
+### jrnl-tools - Developer Work Journal
 
-A streamlined plugin that analyzes staged changes and automatically generates commit messages in Conventional Commits format.
+Integrates Claude Code with [jrnl](https://jrnl.sh/) to provide session handoffs, work logging, and cross-project status tracking. Records what you did, what you decided, and what to do next -- as chronological journal entries accessible from any project or directly via the jrnl CLI.
 
-**Features:**
-- Automatic analysis of staged changes
-- Conventional Commits format (feat:, fix:, docs:, etc.)
-- Learns style from recent commit history
-- Concise messages under 50 characters
-- No emojis or decorations
-- Fast and simple operation
+Complementary to Claude Code's Auto Memory: Auto Memory remembers stable project knowledge; jrnl-tools records the flow of your daily work.
 
-[View simple-commit Documentation](./plugins/simple-commit/README.md)
+[Documentation](./plugins/jrnl-plugin/README.md)
 
-### pdf-processor - Scanned PDF Processing Tool
+### pdf-processor - Scanned PDF Processing
 
-A comprehensive tool for processing scanned PDFs with merge, OCR, and table of contents generation capabilities.
+Merges multiple PDFs, runs OCR with Tesseract, and applies table of contents / bookmarks. Handles the entire workflow from raw scanned pages to a searchable, navigable PDF.
 
-**Features:**
-- PDF merging and preprocessing
-- OCR processing with Tesseract
-- Table of contents creation
-- Bookmark extraction and management
-- Integration with pdftk and gs (Ghostscript)
-
-[View pdf-processor Documentation](./plugins/pdf-processor/README.md)
+[Documentation](./plugins/pdf-processor/README.md)
 
 ## Installation
 
-### Prerequisites
-
-- [Claude Code CLI](https://claude.com/claude-code) installed and configured
-- Internet connection (for plugins that use web search)
-
-### Setup Instructions
-
-1. **Clone this repository:**
+Requires [Claude Code](https://claude.com/claude-code).
 
 ```bash
-git clone <repository-url>
-cd plugin
+# Install individual plugins directly from GitHub
+claude plugin add yostos/claude-code-plugins/plugins/magi
+claude plugin add yostos/claude-code-plugins/plugins/simple-commit
+claude plugin add yostos/claude-code-plugins/plugins/jrnl-plugin
+claude plugin add yostos/claude-code-plugins/plugins/pdf-processor
 ```
 
-2. **Start Claude Code:**
-
-```bash
-claude
-```
-
-3. **Add this marketplace to Claude Code:**
-
-In Claude Code, run:
-
-```
-/plugin marketplace add /path/to/plugin test-marketplace
-```
-
-Replace `/path/to/plugin` with the absolute path to this repository.
-
-For example:
-```
-/plugin marketplace add /Users/username/Desktop/plugin test-marketplace
-```
-
-4. **Install plugins:**
-
-Install MAGI plugin:
-```
-/plugin install magi@test-marketplace
-```
-
-Install simple-commit plugin:
-```
-/plugin install simple-commit@test-marketplace
-```
-
-Install pdf-processor plugin:
-```
-/plugin install pdf-processor@test-marketplace
-```
-
-When prompted, select "Install now".
-
-5. **Restart Claude Code:**
-
-Exit and restart Claude Code for the plugin to become available.
-
-6. **Verify installation:**
-
-```
-/help
-```
-
-You should see the plugin's commands in the command list.
-
-## Using Plugins
-
-### MAGI System
-
-Start a decision-making session:
-
-```
-/magi
-```
-
-Or provide an issue directly:
-
-```
-/magi Should we adopt remote work or require office attendance?
-```
-
-Get help:
-
-```
-/magi-help
-```
-
-### simple-commit
-
-Auto-generate and commit with Conventional Commits format:
-
-```bash
-# 1. Stage your changes
-git add .
-
-# 2. Run the commit command
-/commit
-```
-
-The command automatically:
-- Analyzes staged changes
-- Generates appropriate Conventional Commits message
-- Executes the commit
-
-Create a release:
-
-```
-/release
-```
-
-This automates the entire release process including CHANGELOG generation, tagging, and pushing.
-
-### pdf-processor
-
-Preprocess scanned PDFs (merge and OCR):
-
-```
-/preprocess
-```
-
-Apply table of contents to a PDF:
-
-```
-/apply-toc
-```
-
-The plugin guides you through the process of creating and applying bookmarks to your PDF files.
+See each plugin's README for prerequisites and detailed usage.
 
 ## Development
 
-### Adding New Plugins
-
-1. Create a new directory under `plugins/`:
-
-```bash
-mkdir -p plugins/your-plugin-name/.claude-plugin
-```
-
-2. Create the plugin manifest (`plugins/your-plugin-name/.claude-plugin/plugin.json`):
-
-```json
-{
-  "name": "your-plugin-name",
-  "description": "Brief description of your plugin",
-  "version": "1.0.0",
-  "author": {
-    "name": "Your Name"
-  }
-}
-```
-
-3. Add plugin components as needed:
-   - `commands/` - Slash commands
-   - `agents/` - Specialized agents
-   - `hooks/` - Event hooks
-   - `skills/` - Reusable skills
-
-4. Register in marketplace (`/.claude-plugin/marketplace.json`):
-
-```json
-{
-  "plugins": [
-    {
-      "name": "magi",
-      "source": "./plugins/magi",
-      "description": "Multi-Agent Governance Intelligence System"
-    },
-    {
-      "name": "simple-commit",
-      "source": "./plugins/simple-commit",
-      "description": "Auto-generate Conventional Commits messages"
-    },
-    {
-      "name": "pdf-processor",
-      "source": "./plugins/pdf-processor",
-      "description": "Scanned PDF processing tool"
-    },
-    {
-      "name": "your-plugin-name",
-      "source": "./plugins/your-plugin-name",
-      "description": "Brief description"
-    }
-  ]
-}
-```
-
-5. Reinstall the marketplace:
-
-```
-/plugin marketplace remove test-marketplace
-/plugin marketplace add /path/to/plugin test-marketplace
-/plugin install your-plugin-name@test-marketplace
-```
-
-### Plugin Development Best Practices
-
-- Keep plugins focused on specific tasks
-- Document all commands and features clearly
-- Use descriptive names for commands and agents
-- Include examples in documentation
-- Test thoroughly before publishing
-- Follow Claude Code plugin conventions
-
-## Contributing
-
-This is a personal plugin collection. Suggestions and feedback are welcome through issues.
-
-## License
-
-[Specify your license here]
+See [CLAUDE.md](./CLAUDE.md) for development guidelines.
 
 ## Author
 
 Toshiyuki Yoshida
 
-## Resources
+## License
 
-- [Claude Code Documentation](https://claude.com/claude-code)
-- [Claude Code Plugin Development Guide](https://docs.anthropic.com/claude-code)
-
-## Version History
-
-- 2024-12-11: Initial repository setup with MAGI plugin
+MIT
