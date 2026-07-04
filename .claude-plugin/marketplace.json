@@ -28,6 +28,11 @@
       "name": "nb-tools",
       "source": "./plugins/nb-tools",
       "description": "Command-line note-taking, bookmarking, and task management with nb"
+    },
+    {
+      "name": "youtube-transcriber",
+      "source": "./plugins/youtube-transcriber",
+      "description": "Transcribe YouTube videos to text using yt-dlp and whisper-cli"
     }
   ]
 }
