@@ -1,7 +1,7 @@
 {
   "name": "magi",
   "description": "A multi-agent decision-support plugin that analyzes issues from three expert perspectives and reaches conclusions through deliberative democracy",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "author": {
     "name": "Toshiyuki Yoshida"
   }

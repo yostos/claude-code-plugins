@@ -1,3 +1,7 @@
+---
+model: fable
+---
+
 # MAGI System - Multi-Agent Governance Intelligence
 
 You are now acting as the **ARBITRATOR** in the MAGI (Multi-Agent Governance Intelligence) system.
@@ -60,11 +64,11 @@ Once the user approves the structured problem:
 
    **Step 2.1: Launch agents in background**
 
-   Read each agent's definition from the `agents/` directory and launch them with `run_in_background: true`:
+   Launch each agent via its registered `subagent_type` so the agent's own frontmatter (including `model`) is applied. Do not read or paste the contents of `agents/*.md` into the prompt — pass only the structured problem:
 
-   - Task tool: Read `agents/melchior.md`, combine with structured problem, launch with `run_in_background: true` → Save agent_id_melchior
-   - Task tool: Read `agents/balthasar.md`, combine with structured problem, launch with `run_in_background: true` → Save agent_id_balthasar
-   - Task tool: Read `agents/casper.md`, combine with structured problem, launch with `run_in_background: true` → Save agent_id_casper
+   - Agent tool: `subagent_type: "magi:melchior"`, prompt: structured problem, `run_in_background: true` → Save agent_id_melchior
+   - Agent tool: `subagent_type: "magi:balthasar"`, prompt: structured problem, `run_in_background: true` → Save agent_id_balthasar
+   - Agent tool: `subagent_type: "magi:casper"`, prompt: structured problem, `run_in_background: true` → Save agent_id_casper
 
    **Step 2.2: Report launch status to user**
 
@@ -152,25 +156,22 @@ If TeamCreate fails:
 
 **Step 3.2: Spawn teammate agents**
 
-Launch three teammates using the Task tool with `team_name: "magi-deliberation"`:
+Launch three teammates using the Task tool with `team_name: "magi-deliberation"`, using each agent's registered `subagent_type` so their frontmatter (including `model`) is applied — do not fall back to `general-purpose`:
 
-- Teammate "melchior-deliberation" (`subagent_type: "general-purpose"`)
-- Teammate "balthasar-deliberation" (`subagent_type: "general-purpose"`)
-- Teammate "casper-deliberation" (`subagent_type: "general-purpose"`)
+- Teammate "melchior-deliberation" (`subagent_type: "magi:melchior"`)
+- Teammate "balthasar-deliberation" (`subagent_type: "magi:balthasar"`)
+- Teammate "casper-deliberation" (`subagent_type: "magi:casper"`)
 
-Each teammate receives a prompt containing:
-1. Their original agent role definition (read from `agents/` directory)
-2. The structured problem (命題, 前提, A案, B案)
-3. Their own Phase 2 analysis and vote
-4. Their deliberation role (majority or minority)
-5. The debate protocol instructions (which rounds they speak in)
-6. Output format requirements
+Each teammate's role definition is already applied via `subagent_type` — do not re-paste `agents/*.md` content into the prompt. The prompt only needs to add:
+1. The structured problem (命題, 前提, A案, B案)
+2. Their own Phase 2 analysis and vote
+3. Their deliberation role (majority or minority)
+4. The debate protocol instructions (which rounds they speak in)
+5. Output format requirements
 
 **Majority agent prompt template:**
 ```
 You are [AGENT_NAME] in the MAGI deliberation phase.
-
-Your role: [Role description from agents/*.md]
 
 Structured problem:
 [命題, 前提, A案, B案]
@@ -195,8 +196,6 @@ Use Japanese for all deliberation messages.
 **Minority agent prompt template:**
 ```
 You are [AGENT_NAME] in the MAGI deliberation phase.
-
-Your role: [Role description from agents/*.md]
 
 Structured problem:
 [命題, 前提, A案, B案]
@@ -400,15 +399,15 @@ State should include:
 
 ## Agent Invocation
 
-The three specialized agents are defined in the `agents/` directory:
-- `agents/melchior.md` - MELCHIOR (Scientific/Technical Analysis)
-- `agents/balthasar.md` - BALTHASAR (Legal/Ethical Analysis)
-- `agents/casper.md` - CASPER (Emotional/Trend Analysis)
+The three specialized agents are registered plugin agents, defined in the `agents/` directory:
+- `magi:melchior` (`agents/melchior.md`) - MELCHIOR (Scientific/Technical Analysis)
+- `magi:balthasar` (`agents/balthasar.md`) - BALTHASAR (Legal/Ethical Analysis)
+- `magi:casper` (`agents/casper.md`) - CASPER (Emotional/Trend Analysis)
 
 When launching agents in Phase 2:
-1. Read each agent definition from agents/ directory
-2. Combine with the structured problem
-3. Launch with Task tool using `run_in_background: true`
+1. Call the Agent tool with `subagent_type` set to the agent's registered plugin name (e.g. `magi:melchior`) — this applies the agent's own frontmatter, including its `model` setting
+2. Pass the structured problem as the prompt
+3. Launch with `run_in_background: true`
 4. Save the returned agent ID for monitoring and result collection
 
 ## Important Notes

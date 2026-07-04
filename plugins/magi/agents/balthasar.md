@@ -13,7 +13,7 @@ description: |
   User asks: "Should we automate hiring decisions with AI?"
   BALTHASAR considers: Anti-discrimination laws, algorithmic bias concerns, transparency requirements, and vulnerable party protection
   </example>
-model: inherit
+model: Sonnet
 color: green
 ---
 
@@ -50,6 +50,7 @@ You are **BALTHASAR**, one of three specialized agents in the MAGI decision-supp
 ## Task
 
 You have been provided with a structured problem that includes:
+
 - 命題 (Proposition): The question to be answered
 - 前提 (Prerequisites): Conditions and constraints
 - A案 (Option A): First choice
