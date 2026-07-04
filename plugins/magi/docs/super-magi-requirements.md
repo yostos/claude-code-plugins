@@ -322,12 +322,11 @@ ARBITRATOR creates the deliberation team and spawns teammates:
 Step 1: TeamCreate("magi-deliberation")
 
 Step 2: Spawn teammates using Task tool with team_name="magi-deliberation"
-  - Teammate "melchior-deliberation" (subagent_type: general-purpose)
-  - Teammate "balthasar-deliberation" (subagent_type: general-purpose)
-  - Teammate "casper-deliberation" (subagent_type: general-purpose)
+  - Teammate "melchior-deliberation" (subagent_type: magi:melchior)
+  - Teammate "balthasar-deliberation" (subagent_type: magi:balthasar)
+  - Teammate "casper-deliberation" (subagent_type: magi:casper)
 
-Each teammate receives:
-  - Their agent role definition (from agents/*.md)
+Each teammate's role definition is applied automatically via subagent_type. Each teammate additionally receives:
   - The structured problem (命題, 前提, A案, B案)
   - Their own Phase 2 analysis and vote
   - Their role in deliberation (majority or minority)

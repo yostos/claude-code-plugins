@@ -277,13 +277,13 @@ Displays comprehensive help about the MAGI system, including agent descriptions,
 
 Agents are launched using the Task tool with `run_in_background: true`. The process:
 
-1. **Launch**: ARBITRATOR reads agent definitions from `agents/` and launches them in background
+1. **Launch**: ARBITRATOR launches each agent via its registered `subagent_type` (`magi:melchior`, `magi:balthasar`, `magi:casper`), which applies that agent's own frontmatter (including `model`) automatically
 2. **Monitoring**: ARBITRATOR checks progress periodically
 3. **Progress reporting**: ARBITRATOR displays real-time status updates to user
 4. **Collection**: ARBITRATOR retrieves final results when all agents complete
 
 Each agent:
-- Receives its role-specific prompt from `agents/` directory
+- Runs with the role, characteristics, and model defined in its own `agents/*.md` frontmatter, applied via `subagent_type`
 - Analyzes the problem independently (no visibility into other agents' work)
 - Uses WebSearch to gather information
 - Documents all references

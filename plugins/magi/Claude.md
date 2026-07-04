@@ -607,8 +607,8 @@ Displays comprehensive help about the MAGI system, including agent descriptions,
    - Saves to `state.json` (optional, for session persistence)
 
 3. **Phase 2 - Parallel agent analysis**:
-   - ARBITRATOR launches 3 agents using Task tool with `run_in_background: true`
-   - Each agent receives their definition from `agents/` directory and the structured problem
+   - ARBITRATOR launches 3 agents using Task tool with `run_in_background: true`, specifying each agent's registered `subagent_type` (`magi:melchior`, `magi:balthasar`, `magi:casper`) so each agent's own frontmatter (including `model`) is applied
+   - Each agent receives the structured problem as its prompt
    - ARBITRATOR reports launch status to user: "✓ MELCHIOR - 起動完了"
    - ARBITRATOR monitors progress using AgentOutputTool with `block: false`
    - Progress updates displayed to user: "MELCHIOR: 実行中... / BALTHASAR: ✓ 完了"
@@ -669,13 +669,13 @@ Three specialized agents are defined in the `agents/` directory:
 
 Agents are launched using the Task tool with `run_in_background: true`. The process:
 
-1. **Launch**: ARBITRATOR reads agent definitions and launches them in background
+1. **Launch**: ARBITRATOR launches each agent via its registered `subagent_type` (`magi:melchior`, `magi:balthasar`, `magi:casper`), which applies that agent's own frontmatter (including `model`) automatically
 2. **Monitoring**: ARBITRATOR uses AgentOutputTool with `block: false` to check progress
 3. **Progress reporting**: ARBITRATOR displays real-time status updates to user
 4. **Collection**: ARBITRATOR uses AgentOutputTool with `block: true` to retrieve final results
 
 Each agent:
-- Receives its role-specific prompt from `agents/` directory
+- Runs with the role, characteristics, and model defined in its own `agents/*.md` frontmatter, applied via `subagent_type`
 - Analyzes the problem independently (no visibility into other agents' work)
 - Uses WebSearch to gather information
 - Documents all references
