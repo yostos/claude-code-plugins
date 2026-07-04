@@ -40,7 +40,7 @@ MAGI is implemented as a Claude Code plugin (`plugins/magi/`). The `/magi` comma
 
 ### FR-2: Parallel Analysis (Phase 2)
 
-- **FR-2.1**: MELCHIOR, BALTHASAR, and CASPER SHALL analyze the issue independently and in parallel using the Task tool with `run_in_background: true`.
+- **FR-2.1**: MELCHIOR, BALTHASAR, and CASPER SHALL analyze the issue independently and in parallel using the Agent tool with `run_in_background: true`.
 - **FR-2.2**: Each agent SHALL make independent judgments without referencing other agents' opinions.
 - **FR-2.3**: Each agent SHALL use web search and other tools for information gathering as needed.
 - **FR-2.4**: Each agent SHALL vote for either Option A or Option B and clearly state their reasoning.
@@ -224,8 +224,8 @@ Phase 1: Problem Structuring
   Confirms with user
 
 Phase 2: Parallel Analysis
-  Launch MELCHIOR, BALTHASAR, CASPER in parallel (Task tool, run_in_background)
-  Monitor progress, report status to user
+  Launch MELCHIOR, BALTHASAR, CASPER in parallel (Agent tool, run_in_background)
+  Wait for completion notifications, report status to user
   Each agent votes A or B independently
   Collect all results
 
@@ -275,12 +275,12 @@ Displays comprehensive help about the MAGI system, including agent descriptions,
 
 **Execution model**: Asynchronous parallel execution
 
-Agents are launched using the Task tool with `run_in_background: true`. The process:
+Agents are launched using the Agent tool with `run_in_background: true`. The process:
 
 1. **Launch**: ARBITRATOR launches each agent via its registered `subagent_type` (`magi:melchior`, `magi:balthasar`, `magi:casper`), which applies that agent's own frontmatter (including `model`) automatically
-2. **Monitoring**: ARBITRATOR checks progress periodically
-3. **Progress reporting**: ARBITRATOR displays real-time status updates to user
-4. **Collection**: ARBITRATOR retrieves final results when all agents complete
+2. **Monitoring**: ARBITRATOR waits for automatic completion notifications — it does not poll for progress
+3. **Progress reporting**: ARBITRATOR displays real-time status updates to user as notifications arrive
+4. **Collection**: Each completion notification already carries that agent's full result
 
 Each agent:
 - Runs with the role, characteristics, and model defined in its own `agents/*.md` frontmatter, applied via `subagent_type`

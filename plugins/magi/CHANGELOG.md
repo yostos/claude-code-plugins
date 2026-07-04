@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.2] - 2026-07-05
+
+### Fixed
+
+- Phase 3 deliberation no longer relies on `TeamCreate`/`TeamDelete` or the `team_name` parameter, none of which exist as callable tools. Deliberation agents are now spawned directly via the `Agent` tool with a distinct `name` each, and addressed via `SendMessage`; teardown sends `shutdown_request` messages instead of calling a nonexistent `TeamDelete`
+- Phase 2 progress monitoring no longer references the nonexistent `AgentOutputTool`. The ARBITRATOR now waits for the automatic completion notifications that background agents deliver, instead of polling
+- Fixed `model: Sonnet` (capitalized, non-standard) to `model: sonnet` in the three agent frontmatter files, matching the lowercase convention required by Claude Code agent frontmatter
+- Updated `Claude.md` and `docs/` specification files to match the corrected Phase 2/Phase 3 mechanisms
+
 ## [2.0.1] - 2026-07-05
 
 ### Fixed

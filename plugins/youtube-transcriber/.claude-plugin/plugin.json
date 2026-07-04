@@ -1,0 +1,9 @@
+{
+  "name": "youtube-transcriber",
+  "version": "0.1.0",
+  "description": "Transcribe YouTube videos to text using yt-dlp and whisper-cli",
+  "author": {
+    "name": "yostos"
+  },
+  "keywords": ["youtube", "transcription", "whisper", "yt-dlp", "audio"]
+}

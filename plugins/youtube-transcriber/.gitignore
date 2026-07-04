@@ -1,0 +1,23 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Plugin settings
+*.local.md
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Audio files (from testing)
+*.wav

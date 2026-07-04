@@ -48,7 +48,7 @@ B案: [Option B summary]
 
 Once the user approves the structured problem:
 
-1. **Launch three agents in parallel** using the Task tool with `run_in_background: true`:
+1. **Launch three agents in parallel** using the Agent tool with `run_in_background: true`:
    - MELCHIOR (scientific/technical analysis)
    - BALTHASAR (legal/ethical analysis)
    - CASPER (emotional/trend analysis)
@@ -64,11 +64,11 @@ Once the user approves the structured problem:
 
    **Step 2.1: Launch agents in background**
 
-   Launch each agent via its registered `subagent_type` so the agent's own frontmatter (including `model`) is applied. Do not read or paste the contents of `agents/*.md` into the prompt — pass only the structured problem:
+   Launch each agent via its registered `subagent_type` so the agent's own frontmatter (including `model`) is applied. Do not read or paste the contents of `agents/*.md` into the prompt — pass only the structured problem. Give each a `name` so it can be addressed later if needed:
 
-   - Agent tool: `subagent_type: "magi:melchior"`, prompt: structured problem, `run_in_background: true` → Save agent_id_melchior
-   - Agent tool: `subagent_type: "magi:balthasar"`, prompt: structured problem, `run_in_background: true` → Save agent_id_balthasar
-   - Agent tool: `subagent_type: "magi:casper"`, prompt: structured problem, `run_in_background: true` → Save agent_id_casper
+   - Agent tool: `subagent_type: "magi:melchior"`, `name: "melchior"`, prompt: structured problem, `run_in_background: true`
+   - Agent tool: `subagent_type: "magi:balthasar"`, `name: "balthasar"`, prompt: structured problem, `run_in_background: true`
+   - Agent tool: `subagent_type: "magi:casper"`, `name: "casper"`, prompt: structured problem, `run_in_background: true`
 
    **Step 2.2: Report launch status to user**
 
@@ -82,14 +82,13 @@ Once the user approves the structured problem:
    各エージェントが独立して分析を実行中です...
    ```
 
-   **Step 2.3: Monitor agent progress**
+   **Step 2.3: Wait for completion notifications**
 
-   Periodically check agent status using AgentOutputTool with `block: false`:
+   Background agents notify you automatically when they finish — do NOT sleep, poll, or proactively check on their progress. As each completion notification arrives, report it to the user:
 
-   - If any agent completes, report to user: "✓ [Agent name] - 分析完了"
-   - Continue monitoring until all three agents complete
+   - "✓ [Agent name] - 分析完了"
 
-   Display progress updates in Japanese:
+   Display progress updates in Japanese as notifications arrive:
    ```
    【分析状況】
    MELCHIOR: 実行中...
@@ -99,13 +98,8 @@ Once the user approves the structured problem:
 
    **Step 2.4: Collect final results**
 
-   Once all agents are complete (or use `block: true` to wait for remaining agents):
+   Each completion notification already carries that agent's full analysis and vote — there is no separate fetch step. Once all three notifications have arrived:
 
-   - AgentOutputTool(agent_id_melchior, block: true) → result_melchior
-   - AgentOutputTool(agent_id_balthasar, block: true) → result_balthasar
-   - AgentOutputTool(agent_id_casper, block: true) → result_casper
-
-   Report completion:
    ```
    【Phase 2: 分析完了】
    全てのエージェントが分析を完了しました。
@@ -144,25 +138,19 @@ After collecting all Phase 2 results:
 
 This phase only executes when votes split 2-1 AND the user approves deliberation.
 
-**Step 3.1: Create the deliberation team**
+**Step 3.1: Spawn deliberation agents**
 
-```
-TeamCreate("magi-deliberation")
-```
+Launch three agents in the background using the Agent tool, using each agent's registered `subagent_type` so their frontmatter (including `model`) is applied — do not fall back to `general-purpose`. Give each a distinct `name` so it can be addressed via SendMessage:
 
-If TeamCreate fails:
+- Agent tool: `subagent_type: "magi:melchior"`, `name: "melchior-deliberation"`, `run_in_background: true`
+- Agent tool: `subagent_type: "magi:balthasar"`, `name: "balthasar-deliberation"`, `run_in_background: true`
+- Agent tool: `subagent_type: "magi:casper"`, `name: "casper-deliberation"`, `run_in_background: true`
+
+There is no separate team-creation step — spawned agents are automatically addressable by `name` via SendMessage. If any of the three fails to launch:
 - Display: "議論フェーズの初期化に失敗しました。初回投票結果で最終判定を行います。"
 - Proceed to Phase 4 using Phase 2 votes
 
-**Step 3.2: Spawn teammate agents**
-
-Launch three teammates using the Task tool with `team_name: "magi-deliberation"`, using each agent's registered `subagent_type` so their frontmatter (including `model`) is applied — do not fall back to `general-purpose`:
-
-- Teammate "melchior-deliberation" (`subagent_type: "magi:melchior"`)
-- Teammate "balthasar-deliberation" (`subagent_type: "magi:balthasar"`)
-- Teammate "casper-deliberation" (`subagent_type: "magi:casper"`)
-
-Each teammate's role definition is already applied via `subagent_type` — do not re-paste `agents/*.md` content into the prompt. The prompt only needs to add:
+Each agent's role definition is already applied via `subagent_type` — do not re-paste `agents/*.md` content into the prompt. The prompt only needs to add:
 1. The structured problem (命題, 前提, A案, B案)
 2. Their own Phase 2 analysis and vote
 3. Their deliberation role (majority or minority)
@@ -224,7 +212,7 @@ Display to user:
 少数派: [MINORITY_NAME] ([MINORITY_VOTE])
 ```
 
-**Step 3.3: Execute 4-round debate**
+**Step 3.2: Execute 4-round debate**
 
 Orchestrate the debate by sending instructions to teammates via SendMessage:
 
@@ -278,7 +266,7 @@ Orchestrate the debate by sending instructions to teammates via SendMessage:
   [Message content]
   ```
 
-**Step 3.4: Collect revotes**
+**Step 3.3: Collect revotes**
 
 - SendMessage to all three teammates: "議論を踏まえ、最終投票を行ってください。A案またはB案に投票し、立場を変更した場合はその理由を、維持した場合はその理由を述べてください。"
 - Collect all three revotes
@@ -291,16 +279,14 @@ Orchestrate the debate by sending instructions to teammates via SendMessage:
   - [AGENT_NAME]: [A案/B案] - [理由]
   ```
 
-**Step 3.5: Cleanup**
+**Step 3.4: Cleanup**
 
 - Send shutdown requests to all three teammates via SendMessage with `type: "shutdown_request"`
-- Call TeamDelete to dissolve the team
-- If TeamDelete fails, log warning but continue to Phase 4
 
 **Error handling during deliberation:**
 - If a teammate fails to respond in any round: note the failure, continue with available responses, preserve that agent's Phase 2 vote for the final tally
 - If all teammates fail: display error and fall back to Phase 2 votes for Phase 4
-- Always attempt TeamDelete cleanup regardless of errors
+- Always attempt to send shutdown requests to all teammates regardless of errors
 
 ### Phase 4: Final Arbitration
 
@@ -384,7 +370,7 @@ State should include:
     "user_approved_deliberation": true | false | null
   },
   "deliberation": {
-    "team_name": "magi-deliberation",
+    "agent_names": ["melchior-deliberation", "balthasar-deliberation", "casper-deliberation"],
     "current_round": 0 | 1 | 2 | 3 | 4,
     "revote_results": { ... }
   },
@@ -394,7 +380,7 @@ State should include:
 
 **Key benefit**: If interrupted during Phase 2, you can resume by:
 1. Reading agent IDs from state.json
-2. Using AgentOutputTool to check status and retrieve results
+2. Using SendMessage with the saved agent ID or name to resume monitoring that agent (do not poll — wait for its completion notification)
 3. Continuing from where you left off
 
 ## Agent Invocation
@@ -407,8 +393,8 @@ The three specialized agents are registered plugin agents, defined in the `agent
 When launching agents in Phase 2:
 1. Call the Agent tool with `subagent_type` set to the agent's registered plugin name (e.g. `magi:melchior`) — this applies the agent's own frontmatter, including its `model` setting
 2. Pass the structured problem as the prompt
-3. Launch with `run_in_background: true`
-4. Save the returned agent ID for monitoring and result collection
+3. Launch with `run_in_background: true` and a distinct `name`
+4. Save the returned agent ID and name — do not poll for status; a completion notification carrying the result arrives automatically
 
 ## Important Notes
 
@@ -420,7 +406,7 @@ When launching agents in Phase 2:
 - Use Japanese for user-facing communication (especially output formats)
 - Allow flexibility if binary choice is inappropriate - you can propose alternative options
 - If there's unanimous agreement or strong division, analyze the significance
-- Always clean up the Agent Team (TeamDelete) after deliberation, even if errors occur
+- Always send shutdown requests to the deliberation agents after Phase 3, even if errors occur
 
 ## Begin Execution
 
