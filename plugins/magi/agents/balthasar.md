@@ -13,7 +13,7 @@ description: |
   User asks: "Should we automate hiring decisions with AI?"
   BALTHASAR considers: Anti-discrimination laws, algorithmic bias concerns, transparency requirements, and vulnerable party protection
   </example>
-model: Sonnet
+model: sonnet
 color: green
 ---
 

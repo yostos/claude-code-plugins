@@ -197,22 +197,21 @@ B案: [選択肢Bの概要]
 
 ### Phase 3: Deliberation (Conditional - 2-1 split with user approval only)
 
-14. ARBITRATOR creates an Agent Team (`TeamCreate("magi-deliberation")`)
-15. ARBITRATOR spawns three teammates into the team with their roles and Phase 2 results
-16. 4-round structured debate:
+14. ARBITRATOR spawns three named background agents (via the Agent tool, each addressable by `name`) with their roles and Phase 2 results
+15. 4-round structured debate, orchestrated via `SendMessage`:
     - Round 1: Majority agents present their arguments to the minority agent
     - Round 2: Minority agent sends counterarguments to both majority agents
     - Round 3: Majority agents respond to the counterarguments
     - Round 4: Minority agent sends final rebuttal (guaranteed last word)
-17. All three agents cast a revote with updated reasoning
-18. ARBITRATOR collects revote results and dissolves the team (`TeamDelete`)
+16. All three agents cast a revote with updated reasoning
+17. ARBITRATOR collects revote results and sends shutdown requests to all three agents
 
 ### Phase 4: Final Arbitration
 
-19. ARBITRATOR tallies the final votes (revotes if deliberation occurred, Phase 2 votes otherwise)
-20. Determines the final conclusion by majority decision
-21. ARBITRATOR presents the voting results, vote change tracking (if deliberation occurred), and summarizes each agent's reasoning
-22. ARBITRATOR compiles all external references used by the agents
+18. ARBITRATOR tallies the final votes (revotes if deliberation occurred, Phase 2 votes otherwise)
+19. Determines the final conclusion by majority decision
+20. ARBITRATOR presents the voting results, vote change tracking (if deliberation occurred), and summarizes each agent's reasoning
+21. ARBITRATOR compiles all external references used by the agents
 
 ---
 
@@ -607,14 +606,14 @@ Displays comprehensive help about the MAGI system, including agent descriptions,
    - Saves to `state.json` (optional, for session persistence)
 
 3. **Phase 2 - Parallel agent analysis**:
-   - ARBITRATOR launches 3 agents using Task tool with `run_in_background: true`, specifying each agent's registered `subagent_type` (`magi:melchior`, `magi:balthasar`, `magi:casper`) so each agent's own frontmatter (including `model`) is applied
+   - ARBITRATOR launches 3 agents using the Agent tool with `run_in_background: true`, specifying each agent's registered `subagent_type` (`magi:melchior`, `magi:balthasar`, `magi:casper`) so each agent's own frontmatter (including `model`) is applied
    - Each agent receives the structured problem as its prompt
    - ARBITRATOR reports launch status to user: "✓ MELCHIOR - 起動完了"
-   - ARBITRATOR monitors progress using AgentOutputTool with `block: false`
-   - Progress updates displayed to user: "MELCHIOR: 実行中... / BALTHASAR: ✓ 完了"
+   - ARBITRATOR waits for the automatic completion notification for each agent — it does not poll for status
+   - Progress updates displayed to user as notifications arrive: "MELCHIOR: 実行中... / BALTHASAR: ✓ 完了"
    - Agents work independently, using WebSearch for information gathering
    - Each agent votes A or B with detailed reasoning
-   - ARBITRATOR collects all results when complete
+   - ARBITRATOR collects all results as they arrive via completion notifications
 
 4. **Phase 2.5 - Vote analysis and deliberation decision**:
    - ARBITRATOR tallies initial votes
@@ -624,15 +623,14 @@ Displays comprehensive help about the MAGI system, including agent descriptions,
 
 5. **Phase 3 - Deliberation (conditional)**:
    - Only executes when votes split 2-1 AND user approves
-   - ARBITRATOR creates Agent Team with `TeamCreate("magi-deliberation")`
-   - Spawns 3 teammates with their roles, Phase 2 results, and debate protocol
+   - ARBITRATOR spawns 3 named background agents (via the Agent tool) with their roles, Phase 2 results, and debate protocol — each is addressable by `name` via `SendMessage`, no separate team-creation step is needed
    - Orchestrates 4-round structured debate via `SendMessage`:
      - Round 1: Majority present arguments to minority
      - Round 2: Minority sends counterarguments
      - Round 3: Majority responds
      - Round 4: Minority sends final rebuttal (guaranteed last word)
    - Collects revotes from all agents
-   - Shuts down teammates and dissolves team with `TeamDelete`
+   - Sends shutdown requests to all three agents via `SendMessage`
 
 6. **Phase 4 - Final arbitration**:
    - ARBITRATOR tallies final votes (revotes if deliberation occurred)
@@ -651,8 +649,8 @@ The system can optionally use `state.json` to enable interruption and resumption
 - **Final decision**: Vote counts and summary
 
 **Key benefit**: If interrupted during Phase 2 while agents are running, you can:
-1. Read agent IDs from state.json
-2. Use AgentOutputTool to reconnect and check their status
+1. Read agent IDs/names from state.json
+2. Use SendMessage with the saved agent ID or name to reconnect (do not poll — wait for its completion notification)
 3. Continue monitoring and collect results without restarting analysis
 
 This allows work to be interrupted and resumed at any time.
@@ -667,12 +665,12 @@ Three specialized agents are defined in the `agents/` directory:
 
 **Execution model**: Asynchronous parallel execution
 
-Agents are launched using the Task tool with `run_in_background: true`. The process:
+Agents are launched using the Agent tool with `run_in_background: true`. The process:
 
 1. **Launch**: ARBITRATOR launches each agent via its registered `subagent_type` (`magi:melchior`, `magi:balthasar`, `magi:casper`), which applies that agent's own frontmatter (including `model`) automatically
-2. **Monitoring**: ARBITRATOR uses AgentOutputTool with `block: false` to check progress
-3. **Progress reporting**: ARBITRATOR displays real-time status updates to user
-4. **Collection**: ARBITRATOR uses AgentOutputTool with `block: true` to retrieve final results
+2. **Monitoring**: ARBITRATOR waits for automatic completion notifications — it does not poll for progress
+3. **Progress reporting**: ARBITRATOR displays real-time status updates to user as notifications arrive
+4. **Collection**: Each completion notification already carries that agent's full result — no separate retrieval step is needed
 
 Each agent:
 - Runs with the role, characteristics, and model defined in its own `agents/*.md` frontmatter, applied via `subagent_type`

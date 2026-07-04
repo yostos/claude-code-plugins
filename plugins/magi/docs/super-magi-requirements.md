@@ -43,7 +43,7 @@ Phase 3: Final Arbitration
 ```
 
 - 3-phase execution with majority voting
-- Agents analyze independently using Task tool (`run_in_background`)
+- Agents analyze independently using the Agent tool (`run_in_background`)
 - No inter-agent communication; minority opinion is recorded but passive
 
 #### Super MAGI Extension
@@ -57,7 +57,7 @@ Phase 2: Independent Analysis (UNCHANGED)
     2-1 (split)       ──→ User confirmation ──→ Phase 3 (NEW)
 
 Phase 3: Deliberation (NEW - conditional)
-  TeamCreate("magi-deliberation")
+  Spawn 3 named background agents (Agent tool)
        │
   Minority ←── SendMessage ── Majority   (Round 1: present arguments)
   Minority ──  SendMessage ──→ Majority  (Round 2: counterarguments)
@@ -66,7 +66,7 @@ Phase 3: Deliberation (NEW - conditional)
        │
   All agents revote
        │
-  TeamDelete("magi-deliberation")
+  Send shutdown requests to all three agents
 
 Phase 4: Final Arbitration (RENAMED)
   ARBITRATOR tallies final votes and presents conclusion with deliberation record
@@ -81,7 +81,7 @@ Phase 4: Final Arbitration (RENAMED)
 | Split decisions | Accepted as-is | Challenged through structured debate |
 | Minority voice | Recorded passively | Active counterargument with final rebuttal |
 | Inter-agent communication | None | SendMessage during deliberation |
-| Agent Team API | Not used | Used in Phase 3 only |
+| Named background agents | Phase 2 only | Also used in Phase 3 for deliberation |
 | Unanimous decisions | Same output | Identical behavior (no change) |
 
 Super MAGI preserves the core strength of MAGI -- independent, diverse analysis -- while adding a deliberation layer only when it is needed. For unanimous decisions, behavior is identical to existing MAGI.
@@ -114,9 +114,9 @@ The following decisions were confirmed during requirements gathering:
 
 ### FR-2: Deliberation Phase (Phase 3)
 
-- **FR-2.1**: ARBITRATOR SHALL create an Agent Team using `TeamCreate` with team name `"magi-deliberation"`.
-- **FR-2.2**: ARBITRATOR SHALL spawn three teammate agents (MELCHIOR, BALTHASAR, CASPER) into the team using the `Task` tool with `team_name` parameter.
-- **FR-2.3**: Each teammate SHALL receive their original agent role definition, the structured problem, and their own Phase 2 analysis result.
+- **FR-2.1**: ARBITRATOR SHALL spawn three background agents (MELCHIOR, BALTHASAR, CASPER) using the `Agent` tool, each with a distinct `name` so it is addressable via `SendMessage`. There is no separate team-creation step.
+- **FR-2.2**: Each agent SHALL be launched via its registered `subagent_type` (`magi:melchior`, `magi:balthasar`, `magi:casper`) so its own frontmatter (including `model`) is applied.
+- **FR-2.3**: Each agent SHALL receive the structured problem and their own Phase 2 analysis result in its prompt; its role definition is already applied via `subagent_type` and need not be re-sent.
 - **FR-2.4**: The minority agent SHALL additionally receive the majority agents' analysis results at the start of deliberation.
 
 ### FR-3: Structured Debate Protocol
@@ -148,13 +148,13 @@ The deliberation SHALL follow a strict 4-round protocol:
   - Deliberation summary (key arguments from each round)
   - Final vote results (from revoting)
   - Vote change tracking (which agents changed and why)
-- **FR-6.3**: ARBITRATOR SHALL dissolve the Agent Team using `TeamDelete`.
+- **FR-6.3**: ARBITRATOR SHALL send shutdown requests to all three deliberation agents via `SendMessage`.
 
-### FR-7: Team Lifecycle Management
+### FR-7: Agent Lifecycle Management
 
-- **FR-7.1**: The Agent Team SHALL exist only during Phase 3.
-- **FR-7.2**: If any error occurs during deliberation, ARBITRATOR SHALL attempt to clean up the team via `TeamDelete`.
-- **FR-7.3**: Team state SHALL NOT persist between MAGI sessions.
+- **FR-7.1**: The three deliberation agents SHALL be spawned only during Phase 3.
+- **FR-7.2**: If any error occurs during deliberation, ARBITRATOR SHALL attempt to send shutdown requests to all three agents regardless.
+- **FR-7.3**: Agent state SHALL NOT persist between MAGI sessions.
 
 ### FR-8: Backward Compatibility
 
@@ -175,13 +175,13 @@ The deliberation SHALL follow a strict 4-round protocol:
 
 ### NFR-2: Token Efficiency
 
-- **NFR-2.1**: Agent Team deliberation consumes approximately 3-4x the tokens of a single session. The selective activation design (2-1 only) mitigates this cost.
+- **NFR-2.1**: Deliberation among the three background agents consumes approximately 3-4x the tokens of a single session. The selective activation design (2-1 only) mitigates this cost.
 - **NFR-2.2**: Deliberation prompts SHALL be concise and focused to minimize unnecessary token usage.
 
 ### NFR-3: Reliability
 
 - **NFR-3.1**: If a teammate agent fails during deliberation, ARBITRATOR SHALL report the failure and fall back to Phase 2 results for final arbitration.
-- **NFR-3.2**: If `TeamCreate` fails, ARBITRATOR SHALL inform the user and proceed with final arbitration using Phase 2 votes.
+- **NFR-3.2**: If any of the three deliberation agents fails to launch, ARBITRATOR SHALL inform the user and proceed with final arbitration using Phase 2 votes.
 
 ### NFR-4: User Experience
 
@@ -200,8 +200,8 @@ Phase 1: Problem Structuring (UNCHANGED)
   Confirms with user
 
 Phase 2: Independent Analysis (UNCHANGED)
-  Launch MELCHIOR, BALTHASAR, CASPER in parallel (Task tool, run_in_background)
-  Monitor progress, collect results
+  Launch MELCHIOR, BALTHASAR, CASPER in parallel (Agent tool, run_in_background)
+  Wait for completion notifications, collect results
   Each agent votes A or B independently
 
   ┌─────────────────────────────────────────────────┐
@@ -215,15 +215,14 @@ Phase 2: Independent Analysis (UNCHANGED)
 
 Phase 3: Deliberation (NEW - conditional)
   3.0  ARBITRATOR displays initial vote results
-  3.1  TeamCreate("magi-deliberation")
-  3.2  Spawn 3 teammates with roles + Phase 2 results
-  3.3  Round 1: Majority → Minority (present arguments)
-  3.4  Round 2: Minority → Majority (counterarguments)
-  3.5  Round 3: Majority → Minority (response)
-  3.6  Round 4: Minority → Majority (final rebuttal)
-  3.7  All agents revote with updated reasoning
-  3.8  ARBITRATOR collects revote results
-  3.9  Shutdown teammates, TeamDelete("magi-deliberation")
+  3.1  Spawn 3 named background agents with roles + Phase 2 results (Agent tool)
+  3.2  Round 1: Majority → Minority (present arguments)
+  3.3  Round 2: Minority → Majority (counterarguments)
+  3.4  Round 3: Majority → Minority (response)
+  3.5  Round 4: Minority → Majority (final rebuttal)
+  3.6  All agents revote with updated reasoning
+  3.7  ARBITRATOR collects revote results
+  3.8  Send shutdown requests to all three agents via SendMessage
 
 Phase 4: Final Arbitration (RENAMED from Phase 3)
   Tally final votes
@@ -280,7 +279,7 @@ After collecting all Phase 2 results:
 - Add Phase 3 (Deliberation) to Execution Flow section
 - Add deliberation output format to Output Format section
 - Update Phase numbering (current Phase 3 becomes Phase 4)
-- Add Agent Team lifecycle documentation to Implementation Details
+- Add deliberation agent lifecycle documentation to Implementation Details
 - Add deliberation examples to Usage Examples
 - Update Update History
 
@@ -314,19 +313,18 @@ None. All changes are extensions to existing files. The deliberation prompts are
 
 ## 6. Deliberation Protocol Specification
 
-### 6.1 Team Setup
+### 6.1 Agent Setup
 
-ARBITRATOR creates the deliberation team and spawns teammates:
+ARBITRATOR spawns the three deliberation agents directly; there is no separate team-creation step:
 
 ```
-Step 1: TeamCreate("magi-deliberation")
+Spawn 3 named background agents using the Agent tool (run_in_background: true):
+  - name: "melchior-deliberation" (subagent_type: magi:melchior)
+  - name: "balthasar-deliberation" (subagent_type: magi:balthasar)
+  - name: "casper-deliberation" (subagent_type: magi:casper)
 
-Step 2: Spawn teammates using Task tool with team_name="magi-deliberation"
-  - Teammate "melchior-deliberation" (subagent_type: magi:melchior)
-  - Teammate "balthasar-deliberation" (subagent_type: magi:balthasar)
-  - Teammate "casper-deliberation" (subagent_type: magi:casper)
-
-Each teammate's role definition is applied automatically via subagent_type. Each teammate additionally receives:
+Each agent's role definition is applied automatically via subagent_type, and each is
+addressable via SendMessage using its name. Each agent additionally receives:
   - The structured problem (命題, 前提, A案, B案)
   - Their own Phase 2 analysis and vote
   - Their role in deliberation (majority or minority)
@@ -570,11 +568,10 @@ When no deliberation (3-0 unanimous or user declined):
     "user_approved_deliberation": true | false | null
   },
   "deliberation": {
-    "team_name": "magi-deliberation",
-    "teammate_ids": {
-      "melchior": "teammate_id",
-      "balthasar": "teammate_id",
-      "casper": "teammate_id"
+    "agent_names": {
+      "melchior": "melchior-deliberation",
+      "balthasar": "balthasar-deliberation",
+      "casper": "casper-deliberation"
     },
     "current_round": 0 | 1 | 2 | 3 | 4,
     "rounds": [
@@ -602,22 +599,22 @@ When no deliberation (3-0 unanimous or user declined):
 
 ## 9. Error Handling
 
-### 9.1 Team Creation Failure
+### 9.1 Total Agent Spawn Failure
 
 ```
-Trigger: TeamCreate("magi-deliberation") fails
+Trigger: All three deliberation agents fail to spawn
 Action:
   1. Display error to user: "議論フェーズの初期化に失敗しました。初回投票結果で最終判定を行います。"
   2. Proceed to Phase 4 using Phase 2 votes
   3. Note the failure in the final output
 ```
 
-### 9.2 Teammate Spawn Failure
+### 9.2 Partial Agent Spawn Failure
 
 ```
-Trigger: One or more teammates fail to spawn
+Trigger: One or more (but not all) teammates fail to spawn
 Action:
-  1. If all teammates fail: treat as Team Creation Failure
+  1. If all teammates fail: treat as Total Agent Spawn Failure (9.1)
   2. If one teammate fails:
      - Note which agent could not join deliberation
      - Continue deliberation with remaining agents
@@ -645,14 +642,14 @@ Action:
   4. Non-responding agent's Phase 2 vote is preserved
 ```
 
-### 9.5 Team Cleanup Failure
+### 9.5 Shutdown Failure
 
 ```
-Trigger: TeamDelete fails after deliberation
+Trigger: A shutdown request fails to deliver to one or more deliberation agents
 Action:
   1. Log warning but do not block final output
   2. Proceed to Phase 4 normally
-  3. Team resources will be cleaned up by session end
+  3. Remaining agents will be cleaned up by session end
 ```
 
 ---
@@ -674,11 +671,11 @@ Action:
 
 | Scenario | Expected Behavior |
 |---|---|
-| TeamCreate fails | Fallback to Phase 2 results |
+| All agents fail to spawn | Fallback to Phase 2 results |
 | One teammate crashes | Continue with remaining agents |
 | All teammates crash | Fallback to Phase 2 results |
 | SendMessage failure | Skip message, continue protocol |
-| TeamDelete fails | Log warning, continue to output |
+| Shutdown request fails | Log warning, continue to output |
 
 ### 10.3 Validation Criteria
 
@@ -687,7 +684,7 @@ Action:
 - All 4 rounds execute in correct order
 - Minority agent always gets the final word (Round 4)
 - Vote changes are tracked and displayed
-- Team is cleaned up after deliberation
+- All three agents receive shutdown requests after deliberation
 - Errors degrade gracefully to Phase 2 results
 
 ---

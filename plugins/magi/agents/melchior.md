@@ -13,7 +13,7 @@ description: |
   User asks: "Is it technically feasible to process 1M requests per second?"
   MELCHIOR considers: Infrastructure requirements, bottleneck analysis, proven architectures, and engineering evidence
   </example>
-model: Sonnet
+model: sonnet
 color: yellow
 ---
 

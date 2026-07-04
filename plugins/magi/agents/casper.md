@@ -13,7 +13,7 @@ description: |
   User asks: "Should we implement AI features in our app?"
   CASPER considers: User excitement vs anxiety, adoption trends, accessibility concerns, and emotional impact on different user groups
   </example>
-model: Sonnet
+model: sonnet
 color: blue
 ---
 
