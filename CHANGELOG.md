@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+- jrnl-tools plugin removed from marketplace listing (deprecated, no longer developed). Auto Memory now covers the cross-session recall use case it was built for. Plugin files remain in the repository for existing installs; see `plugins/jrnl-plugin/docs/architecture-decisions.md` ADR-012.
+
 ## [0.6.0] - 2026-02-13
 
 ### Added

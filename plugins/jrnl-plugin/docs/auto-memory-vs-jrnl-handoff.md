@@ -135,3 +135,12 @@ Information recorded in jrnl can be accessed directly from the terminal with `jr
 Since Auto Memory now largely covers day-to-day session context persistence, the relative importance of handoff has decreased. However, jrnl retains its unique value as a "work diary and history," and the two are complementary. Future development of jrnl-plugin should focus on feature enhancements that emphasize differentiation from Auto Memory: chronological records, cross-project overview, and team sharing.
 
 At this time, no changes to the specification or architecture are required. The existing design -- particularly ADR-010's "handoff as pointer" approach -- naturally achieves separation from Auto Memory.
+
+## Addendum (2026-07-19): Decision Reversed
+
+The "no changes required" conclusion above was based on a conceptual analysis of Auto Memory vs. jrnl Handoff, done shortly after Auto Memory's introduction. After several months of actual day-to-day use of Claude Code with Auto Memory, that conceptual separation has not held up in practice:
+
+- The primary reason this plugin existed -- giving Claude Code a way to recall context across sessions -- is now handled automatically by Auto Memory, with no explicit command required
+- The features that were supposed to remain differentiated (cross-project overview, chronological work history, team sharing via `/jrnl-status` and friends) were not exercised enough in practice to justify keeping a dedicated plugin around
+
+As a result, jrnl-tools is now deprecated. See [ADR-012](architecture-decisions.md#adr-012-deprecate-jrnl-tools) for the full decision record. This document is kept as-is (not rewritten) so the original reasoning remains visible; treat the "Conclusion" section above as superseded by ADR-012, not as current guidance.

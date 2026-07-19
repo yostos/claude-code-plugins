@@ -20,11 +20,6 @@
       "description": "Merge, OCR, and table of contents generation for scanned PDFs"
     },
     {
-      "name": "jrnl-tools",
-      "source": "./plugins/jrnl-plugin",
-      "description": "Claude Code integration with jrnl CLI for intelligent journaling, handoffs, and cross-project context"
-    },
-    {
       "name": "nb-tools",
       "source": "./plugins/nb-tools",
       "description": "Command-line note-taking, bookmarking, and task management with nb"

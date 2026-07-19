@@ -2,6 +2,8 @@
 
 **jrnl Project Tag:** jrnl-plugin
 
+**Status: Deprecated (2026-07-19).** No further development is planned. See [ADR-012](docs/architecture-decisions.md#adr-012-deprecate-jrnl-tools) and the [Auto Memory vs jrnl Handoff addendum](docs/auto-memory-vs-jrnl-handoff.md#addendum-2026-07-19-decision-reversed). This document is retained for historical context only.
+
 This document provides context for developing the jrnl-tools Claude Code plugin.
 
 ## Background
@@ -21,7 +23,7 @@ The decision was made on 2026-02-02 and documented in `jrnl-mcp` ADR-005. Key re
 ### Project Status
 
 - **jrnl-mcp**: Entered maintenance mode (security/critical fixes only)
-- **jrnl-tools**: Active development (this plugin)
+- **jrnl-tools**: Deprecated (2026-07-19), no further development (this plugin)
 
 ---
 
