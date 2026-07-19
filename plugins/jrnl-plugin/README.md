@@ -1,5 +1,11 @@
 # jrnl-tools
 
+**Deprecated (2026-07-19).** This plugin is no longer maintained and has been removed from the marketplace listing, so new installs are no longer offered. Claude Code's built-in Auto Memory now covers the cross-session recall use case this plugin was built for, so a separate jrnl-based handoff mechanism is no longer needed. See [ADR-012](docs/architecture-decisions.md#adr-012-deprecate-jrnl-tools) for the full rationale.
+
+If you still use jrnl and want Claude Code to run jrnl commands on your behalf, a lighter-weight skill for that is planned separately; this plugin's handoff/status/restore workflow will not receive further development.
+
+The files below are kept for reference and for existing installs; no further changes are planned.
+
 Claude Code plugin for intelligent journaling with [jrnl](https://jrnl.sh/).
 
 ## Overview

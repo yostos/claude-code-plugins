@@ -2,9 +2,9 @@
 
 [![GitHub Release](https://img.shields.io/github/v/release/yostos/claude-code-plugins)](https://github.com/yostos/claude-code-plugins/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Plugins](https://img.shields.io/badge/plugins-5-green.svg)](#plugins)
+[![Plugins](https://img.shields.io/badge/plugins-4-green.svg)](#plugins)
 
-A collection of plugins that extend Claude Code with decision support, journaling, commit automation, and PDF processing.
+A collection of plugins that extend Claude Code with decision support, commit automation, and PDF processing.
 
 ## Plugins
 
@@ -26,14 +26,6 @@ Eliminates the friction of writing commit messages while keeping them consistent
 
 [Documentation](./plugins/simple-commit/README.md)
 
-### jrnl-tools - Developer Work Journal
-
-Integrates Claude Code with [jrnl](https://jrnl.sh/) to provide session handoffs, work logging, and cross-project status tracking. Records what you did, what you decided, and what to do next -- as chronological journal entries accessible from any project or directly via the jrnl CLI.
-
-Complementary to Claude Code's Auto Memory: Auto Memory remembers stable project knowledge; jrnl-tools records the flow of your daily work.
-
-[Documentation](./plugins/jrnl-plugin/README.md)
-
 ### pdf-processor - Scanned PDF Processing
 
 Merges multiple PDFs, runs OCR with Tesseract, and applies table of contents / bookmarks. Handles the entire workflow from raw scanned pages to a searchable, navigable PDF.
@@ -48,7 +40,6 @@ Requires [Claude Code](https://claude.com/claude-code).
 # Install individual plugins directly from GitHub
 claude plugin add yostos/claude-code-plugins/plugins/magi
 claude plugin add yostos/claude-code-plugins/plugins/simple-commit
-claude plugin add yostos/claude-code-plugins/plugins/jrnl-plugin
 claude plugin add yostos/claude-code-plugins/plugins/pdf-processor
 ```
 

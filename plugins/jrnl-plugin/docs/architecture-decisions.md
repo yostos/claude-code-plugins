@@ -448,3 +448,46 @@ Use git output as **intermediate input** during handoff creation and context res
 - Restore detects post-handoff changes and uncommitted work
 - Non-git projects are completely unaffected (graceful fallback)
 - Commands become slightly longer but remain simple conditional logic
+
+---
+
+## ADR-012: Deprecate jrnl-tools
+
+**Date**: 2026-07-19
+
+**Status**: Accepted
+
+### Context
+
+`docs/auto-memory-vs-jrnl-handoff.md` (assessment dated 2026-02-13) concluded that jrnl-tools required no architectural changes after Auto Memory was introduced, reasoning that Auto Memory covers Stock (stable knowledge) while jrnl-tools covers Flow (chronological work records), and that the two are complementary rather than overlapping.
+
+In practice, after several months of using Claude Code with Auto Memory in daily work, the primary motivation for this plugin — giving Claude Code a way to recall context across sessions — is no longer felt. Auto Memory's automatic, no-explicit-action recall has absorbed the use case that jrnl-tools' handoff/restore commands were designed to serve. The remaining jrnl-tools-only capabilities (cross-project overview via `/jrnl-status`, chronological work history, team-shareable handoffs) have not seen enough real use to justify continued maintenance of a dedicated plugin with four commands and a skill.
+
+### Decision
+
+Deprecate jrnl-tools:
+
+- Remove the `jrnl-tools` entry from `.claude-plugin/marketplace.json` so it is no longer offered to new installs
+- Mark the plugin's README.md and CLAUDE.md as deprecated, with no further development planned
+- Keep all existing files in the repository for reference and for users who already have it installed
+- Do not delete or archive the plugin directory at this time
+
+### Rationale
+
+1. **Primary use case absorbed by Auto Memory**: Cross-session recall, the original driver for this plugin, is now handled automatically without any explicit command
+2. **Low real-world usage of the differentiating features**: Cross-project status and chronological history, the features that don't overlap with Auto Memory, were not exercised enough to justify upkeep
+3. **Lower maintenance surface**: One fewer plugin with commands, a skill, and CLI integration to keep working across jrnl and Claude Code updates
+4. **Reversal is intentional, not an oversight**: This decision knowingly supersedes the "no changes required" conclusion in `docs/auto-memory-vs-jrnl-handoff.md`; that document is not rewritten but appended with an addendum recording the reversal and why
+
+### Alternatives Considered
+
+- **Keep maintaining as-is**: Rejected; the differentiating features are not seeing enough use to justify the maintenance cost
+- **Archive/delete the plugin directory immediately**: Rejected; keeping the files avoids breaking existing installs and preserves the design history (ADRs, use cases) for reference
+- **Trim to a minimal jrnl skill only**: Considered for a separate, future effort — a lightweight skill that simply runs jrnl commands on request, without the handoff/status/restore workflow. Not part of this decision; tracked as a possible follow-up, not a replacement plugin
+
+### Consequences
+
+- New Claude Code installs no longer see jrnl-tools in the marketplace
+- Existing installs continue to work unchanged; no breaking change is forced
+- `/jrnl-handoff`, `/jrnl-restore`, `/jrnl-status`, `/jrnl-log` and the `jrnl` skill receive no further fixes or enhancements
+- Future jrnl integration, if any, is expected to be a separate, simpler skill rather than a revival of this plugin
