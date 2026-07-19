@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- jrnl-cli plugin: a thin skill that translates natural language requests into `jrnl` CLI commands, with no tag scheme, no automatic project tagging, and no session-handoff workflow
+
 ### Removed
 - jrnl-tools plugin removed from marketplace listing (deprecated, no longer developed). Auto Memory now covers the cross-session recall use case it was built for. Plugin files remain in the repository for existing installs; see `plugins/jrnl-plugin/docs/architecture-decisions.md` ADR-012.
 

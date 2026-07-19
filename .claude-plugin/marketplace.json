@@ -20,6 +20,11 @@
       "description": "Merge, OCR, and table of contents generation for scanned PDFs"
     },
     {
+      "name": "jrnl-cli",
+      "source": "./plugins/jrnl-cli",
+      "description": "Thin natural-language wrapper around the jrnl CLI for creating and searching journal entries"
+    },
+    {
       "name": "nb-tools",
       "source": "./plugins/nb-tools",
       "description": "Command-line note-taking, bookmarking, and task management with nb"
