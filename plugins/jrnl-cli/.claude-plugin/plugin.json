@@ -1,0 +1,12 @@
+{
+  "name": "jrnl-cli",
+  "version": "0.1.0",
+  "description": "Thin natural-language wrapper around the jrnl CLI for creating and searching journal entries",
+  "author": {
+    "name": "Toshiyuki Yoshida"
+  },
+  "homepage": "https://github.com/yostos/claude-code-plugins/tree/main/plugins/jrnl-cli",
+  "repository": "https://github.com/yostos/claude-code-plugins.git",
+  "license": "MIT",
+  "keywords": ["jrnl", "journal", "cli"]
+}
