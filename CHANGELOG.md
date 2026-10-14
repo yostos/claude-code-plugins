@@ -7,9 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- jrnl-cli plugin: a thin skill that translates natural language requests into `jrnl` CLI commands, with no tag scheme, no automatic project tagging, and no session-handoff workflow
-
 ### Changed
 - simple-commit plugin v0.2.0: `/commit` command overhaul
   - Conventional Commits prefix is now mandatory; recent commits only set language and tone (merge commits ignored)
