@@ -1,9 +1,12 @@
 {
   "name": "simple-commit",
-  "version": "0.1.0",
-  "description": "ステージされた変更を分析してConventional Commits形式のコミットメッセージを自動生成し、コミットを実行",
+  "version": "0.2.0",
+  "description": "Auto-generate Conventional Commits messages and prepare Keep a Changelog releases",
   "author": {
     "name": "Toshiyuki Yoshida"
   },
+  "homepage": "https://github.com/yostos/claude-code-plugins/tree/main/plugins/simple-commit",
+  "repository": "https://github.com/yostos/claude-code-plugins.git",
+  "license": "MIT",
   "keywords": ["git", "commit", "conventional-commits", "automation"]
 }

@@ -1,318 +1,271 @@
 ---
-description: Create a release with automatic CHANGELOG generation, tagging, and push
-model: haiku
-allowed-tools: ["Bash", "AskUserQuestion"]
+description: Prepare a release with a Keep a Changelog 2.0.0 entry, version bump, release PR, tag, and optional GitHub Release
+argument-hint: "[version] [--direct | --tag-only]"
+model: sonnet
+allowed-tools: Read, Edit, Write, AskUserQuestion, Bash(git status:*), Bash(git branch:*), Bash(git symbolic-ref:*), Bash(git describe:*), Bash(git remote:*), Bash(git fetch:*), Bash(git rev-list:*), Bash(git log:*), Bash(git diff:*), Bash(git tag:*), Bash(git ls-files:*), Bash(git switch:*), Bash(git add:*), Bash(git commit:*), Bash(git push:*), Bash(gh auth status:*), Bash(gh pr create:*), Bash(gh release create:*), Bash(gh release view:*)
 ---
 
 # Create Release
 
-Automate the release process: collect changes since last tag, generate CHANGELOG entry, create new tag, and push.
+Prepare and publish a release: draft a CHANGELOG entry following [Keep a Changelog 2.0.0](https://keepachangelog.com/en/2.0.0/), bump version files, and either open a release PR or tag and push.
 
-## Prerequisites
+## Context
 
-- All changes must be committed (no uncommitted changes)
-- Working in a Git repository
-- Git remote configured for push
+- Working tree status: !`git status --porcelain`
+- Current branch: !`git branch --show-current`
+- Default branch (remote HEAD): !`git symbolic-ref --short refs/remotes/origin/HEAD`
+- Previous tag: !`git describe --tags --abbrev=0`
+- Remote URL: !`git remote get-url origin`
+- Arguments: $ARGUMENTS
 
-## Workflow
+The context above is already collected. Do NOT run these commands again. A "fatal" message for the previous tag means there is no tag yet.
 
-### 1. Verify Clean Working Directory
+## Modes
 
-Check for uncommitted changes:
+Choose the mode from the arguments:
+
+| Mode | Argument | What it does |
+| --- | --- | --- |
+| Release PR (default) | none | Commit CHANGELOG and version bumps on `release/<tag>`, push, open a PR, and stop. No tag is created. |
+| Direct | `--direct` | Commit on the current branch, tag, and push. Use only for repositories that allow direct pushes. |
+| Tag only | `--tag-only` | After the release PR is merged, tag the merged commit and push the tag. |
+
+A version given in the arguments (e.g. `1.4.0` or `v1.4.0`) is used as the suggested version.
+
+The default is the release PR mode because many repositories forbid direct pushes to the default branch by policy even when GitHub branch protection is not enabled.
+
+## Shared Checks (all modes)
+
+1. **Clean working tree**: If the working tree status is not empty, display "Error: Uncommitted changes detected. Please commit or stash changes before release." and stop.
+2. **Default branch**: Strip `origin/` from the default branch. If it could not be determined, assume `main` if it exists, otherwise `master`. If the current branch is not the default branch, display "Error: Run /release on <default branch>." and stop.
+3. **Up to date**: Run `git fetch origin --tags`, then `git rev-list --count HEAD..@{u}`. If the count is not 0, tell the user to pull first and stop.
+4. **Tag format**: If a previous tag exists, reuse its prefix (`v` or none). Otherwise use `v`. CHANGELOG headings never include the prefix (`## [1.4.0]`), tags do (`v1.4.0`).
+5. **Repository URL**: Convert the remote URL to `https://<host>/<owner>/<repo>` (handle `git@host:owner/repo.git`, `ssh://git@host/owner/repo.git`, and `https://...`). Used for CHANGELOG link references.
+6. **GitHub CLI**: If the host is `github.com`, run `gh auth status`. GitHub features (PR, Release) are available only when it succeeds. If not, fall back to plain git and print the manual steps instead.
+
+## Release PR Mode / Direct Mode
+
+### 1. Collect changes
+
 ```bash
-git status --porcelain
+# With a previous tag
+git log <previous-tag>..HEAD --no-merges --pretty=format:"%h %s%n%b" --name-only
+# First release
+git log --no-merges --pretty=format:"%h %s%n%b" --name-only
 ```
 
-If output is not empty:
-- Display error: "Error: Uncommitted changes detected. Please commit or stash changes before release."
-- Exit immediately
+If there are no commits since the previous tag, display "Warning: No new commits since <previous-tag>. Nothing to release." and ask whether to continue.
 
-### 2. Check gh CLI Availability
+Also read the current `[Unreleased]` section of CHANGELOG.md, if any. Entries already written there are human-curated and take priority over anything drafted from commits.
 
-Check if GitHub CLI is available:
+### 2. Suggest the next version
+
+Based on Conventional Commits since the previous tag:
+
+| Commits contain | 1.0.0 or later | 0.x |
+| --- | --- | --- |
+| `!` or `BREAKING CHANGE:` | major | minor |
+| `feat` | minor | minor |
+| anything else | patch | patch |
+
+First release with no tag: suggest `0.1.0`. A version from the arguments overrides the suggestion.
+
+### 3. Find version files
+
+List candidates:
+
 ```bash
-gh --version 2>/dev/null && echo "available" || echo "unavailable"
+git ls-files '*package.json' '*pyproject.toml' '*Cargo.toml' '*plugin.json' '*marketplace.json'
 ```
 
-Store the result for later use:
-- If available: Offer GitHub Release creation option
-- If unavailable: Proceed with Git tag only (traditional workflow)
+Exclude files under `node_modules/`, `vendor/`, and test fixtures. Read each candidate's current version. For each, check with `git diff <previous-tag>..HEAD -- <file>` whether the version was already changed since the previous tag.
 
-### 3. Get Previous Tag and Determine New Version
+In a monorepo the repository version and component versions are independent. Do not assume every file gets the release version. In step 5, show each candidate with its current version and whether it was already bumped, and let the user choose which files to update and to what version.
 
-Get the latest tag:
-```bash
-git describe --tags --abbrev=0 2>/dev/null || echo "none"
-```
+### 4. Draft the CHANGELOG entry (Keep a Changelog 2.0.0)
 
-If no previous tag exists:
-- This is the first release
-- Default suggested version: `v0.1.0`
-- Commit range: all commits from repository start
+Machines draft, humans curate. Produce a draft for the user to approve, not a commit log.
 
-If previous tag exists (e.g., `v1.0.0`):
-- Parse version and increment patch version: `v1.0.0` → `v1.0.1`
-- Suggested version: incremented patch version
-- Commit range: from previous tag to HEAD
+**Structure**
 
-### 4. Collect Commits and Filter Article-Related Changes
-
-Get commit list with changed files:
-```bash
-# If previous tag exists:
-git log <previous-tag>..HEAD --pretty=format:"%H|%s" --name-only
-
-# If no previous tag (first release):
-git log --pretty=format:"%H|%s" --name-only
-```
-
-For each commit:
-1. Get the list of changed files for that commit
-2. Check if ALL changed files are under `posts/` or `articles/` directories
-3. If yes → **Exclude this commit** from CHANGELOG
-4. If no (has changes outside these directories) → **Include this commit**
-
-Example filtering logic:
-- Commit changes only `posts/new-article.md` → Exclude
-- Commit changes `posts/article.md` + `src/utils.ts` → Include
-- Commit changes only `src/auth.ts` → Include
-
-### 5. Generate CHANGELOG Entry
-
-Group commits by Conventional Commit type:
-
-**Categories:**
-- `feat:` → **Added** section
-- `fix:` → **Fixed** section
-- `docs:` → **Changed** section (if not article-related)
-- `refactor:` → **Changed** section
-- `perf:` → **Changed** section
-- `test:` → **Changed** section (mention in notes)
-- `chore:` → Generally omit from CHANGELOG unless significant
-- Others → **Changed** section
-
-Format (Keep a Changelog style):
 ```markdown
 ## [X.Y.Z] - YYYY-MM-DD
 
+Optional one or two sentence summary for notable releases.
+
 ### Added
-- Description from feat: commits
-
-### Fixed
-- Description from fix: commits
-
 ### Changed
-- Description from other commits
+### Deprecated
+### Removed
+### Fixed
+### Security
 ```
 
-**Important:**
-- Use commit message subject (after the type prefix)
-- Remove emoji if present
-- Keep descriptions concise
-- If a section has no items, omit that section
-- Date format: ISO 8601 (YYYY-MM-DD)
+- Use only these six types, in this order. Omit empty sections.
+- Date in `YYYY-MM-DD` (today).
 
-### 6. Ask User for Version Confirmation
+**Mapping from commits**
 
-Use AskUserQuestion to confirm version:
-- Show suggested version as default
-- Allow user to submit as-is or provide custom version
-- Validate format: must start with `v` and follow semver (e.g., `v1.2.3`)
+- `feat` -> Added (or Changed when it modifies existing behavior)
+- `fix` -> Fixed, or Security when it fixes a vulnerability
+- `perf`, `refactor` -> Changed only when users notice the effect; otherwise omit
+- `revert` -> describe the user-visible result under the fitting type, or omit if the reverted change was never released
+- Deprecations -> Deprecated; removals of features, options, or support -> Removed
+- `docs`, `test`, `style`, `ci`, `build`, `chore` -> omit unless users are affected (e.g. a dropped runtime version)
+- Dependency updates are not a type: describe the effect under the fitting type if it matters to users, otherwise omit
 
-### 7. Update CHANGELOG.md
+**Writing rules**
 
-Check if CHANGELOG.md exists:
-```bash
-test -f CHANGELOG.md && echo "exists" || echo "none"
-```
+- Write for the people who use the software, in plain and concise language
+- Summarize across commits from the reader's point of view; one entry may cover several commits
+- Breaking changes: prefix the entry with `**Breaking:**` inside its type (usually Changed or Removed) and state what breaks. Do not create a separate section
+- Security entries lead with the CVE identifier when one exists: `- CVE-2026-12345: ...`
+- No commit hashes, no bare `(#123)` references, no emojis, no author handles
+- If a component directory with its own CHANGELOG.md was changed, keep the root entry as a summary and remind the user to check the component changelog
 
-**If CHANGELOG.md does NOT exist:**
-Create new file with template:
+### 5. Confirm with the user
+
+Show in one message:
+
+- Version and tag
+- The full draft entry
+- Version file changes proposed
+- What will happen next (release PR or direct push)
+
+Then use AskUserQuestion:
+
+- **Approve** - proceed
+- **Revise** - the user describes changes; apply them and confirm again
+- **Cancel** - stop without changing anything
+
+Also confirm the version files to update (multiSelect) in the same AskUserQuestion call. If the tag already exists (`git tag -l <tag>`), say so and ask for another version.
+
+### 6. Update files
+
+**CHANGELOG.md does not exist:** create it.
+
 ```markdown
 # Changelog
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
 ## [X.Y.Z] - YYYY-MM-DD
-[generated entry here]
-```
 
-**If CHANGELOG.md EXISTS:**
-1. Read existing content
-2. Find the line `## [Unreleased]`
-3. Insert new version entry right after that line
-4. Preserve all existing content
-
-Example:
-```markdown
-# Changelog
 ...
-## [Unreleased]
 
-## [1.0.1] - 2024-12-15    <-- NEW ENTRY INSERTED HERE
-
-### Added
-- New feature
-
-## [1.0.0] - 2024-12-01    <-- EXISTING CONTENT PRESERVED
-...
+[Unreleased]: <repo-url>/compare/<tag>...HEAD
+[X.Y.Z]: <repo-url>/releases/tag/<tag>
 ```
 
-### 8. Commit CHANGELOG.md
+**CHANGELOG.md exists:** edit it with Read and Edit.
 
-Stage and commit the updated CHANGELOG:
+1. Replace the contents of `## [Unreleased]` with the approved entry under the new version heading, and leave a fresh, empty `## [Unreleased]` above it.
+2. Keep every older version, including `[YANKED]` markers, unchanged.
+3. Link references at the bottom of the file:
+   - `[Unreleased]: <repo-url>/compare/<new-tag>...HEAD`
+   - `[X.Y.Z]: <repo-url>/compare/<previous-tag>...<new-tag>` (first release: `<repo-url>/releases/tag/<new-tag>`)
+   - If older versions lack link references, add them for versions whose tags exist.
+   - Skip link references only when the repository URL is unknown.
+
+Update the approved version files with Edit. Change only the version field.
+
+### 7a. Release PR mode
+
 ```bash
-git add CHANGELOG.md
-git commit -m "chore: update CHANGELOG for vX.Y.Z"
+git switch -c release/<tag>
+git add CHANGELOG.md <version files>
+git commit -m "chore(release): <tag>"
+git push -u origin release/<tag>
 ```
 
-### 9. Create Git Tag
+If GitHub CLI is available, open the PR with the approved entry (without its version heading) as the body:
 
-Create annotated tag with version:
 ```bash
-git tag -a vX.Y.Z -m "Release vX.Y.Z"
-```
-
-### 10. Push Changes and Tag
-
-Push both the commit and the tag:
-```bash
-git push && git push origin vX.Y.Z
-```
-
-Use `&&` to ensure both push operations succeed sequentially.
-
-### 11. Create GitHub Release (Optional)
-
-**Only if `gh` CLI is available (from step 2):**
-
-Ask user if they want to create a GitHub Release:
-- Use AskUserQuestion with options:
-  - "Yes" - Create GitHub Release
-  - "No" - Skip (Git tag only)
-
-**If user chooses "Yes":**
-
-Create GitHub Release with the CHANGELOG entry:
-```bash
-gh release create vX.Y.Z \
-  --title "Release vX.Y.Z" \
-  --notes "$(cat <<'EOF'
-[Insert the generated CHANGELOG entry here without the version header]
+gh pr create --base <default branch> --title "chore(release): <tag>" --body-file - <<'EOF'
+<entry>
 EOF
-)"
 ```
 
-**Important:**
-- Use the CHANGELOG content generated in step 5
-- Omit the version header line (`## [X.Y.Z] - YYYY-MM-DD`) from the release notes
-- Include only the categorized changes (Added, Fixed, Changed sections)
-- The release will be automatically published on GitHub
+Otherwise print the compare URL `<repo-url>/compare/<default branch>...release/<tag>?expand=1`.
 
-**Verification:**
+Then stop and tell the user: "After the PR is merged, switch to <default branch>, pull, and run /release --tag-only."
+
+### 7b. Direct mode
+
 ```bash
-gh release view vX.Y.Z
+git add CHANGELOG.md <version files>
+git commit -m "chore(release): <tag>"
+git tag -a <tag> -m "Release <tag>"
+git push --atomic origin HEAD <tag>
 ```
 
-### 12. Display Success Message
+`--atomic` pushes the branch and the tag together or not at all. Continue with "GitHub Release" below.
 
-Show summary:
+## Tag Only Mode
+
+1. Run the shared checks.
+2. Read CHANGELOG.md and take the first released version heading below `[Unreleased]` as the version. Build the tag with the prefix.
+3. If `git tag -l <tag>` returns the tag (remote tags are included after the fetch in the shared checks), display "Error: Tag <tag> already exists." and stop.
+4. Confirm the version and the commit to tag (`git log -1 --oneline`) with AskUserQuestion.
+5. Create and push the tag:
+
+   ```bash
+   git tag -a <tag> -m "Release <tag>"
+   git push origin <tag>
+   ```
+
+6. Continue with "GitHub Release" below.
+
+## GitHub Release (Direct and Tag Only modes)
+
+Only when GitHub CLI is available. Ask with AskUserQuestion whether to create a GitHub Release (Yes / No).
+
+```bash
+gh release create <tag> --verify-tag --title "<tag>" --notes-file - <<'EOF'
+<entry without the version heading>
+EOF
 ```
-✓ Release vX.Y.Z created successfully
 
-Changes included:
-- X commits
-- Y features added
-- Z bugs fixed
+Then show the URL from `gh release view <tag> --json url --jq .url`.
 
-Completed steps:
-- CHANGELOG.md updated and committed
-- Tag vX.Y.Z created
-- Changes pushed to remote
-- [If created] GitHub Release published
+## Result
+
+Show a plain-text summary (no emojis or symbols):
+
 ```
+Release <tag> prepared            (release PR mode)
+Release <tag> published           (direct / tag only mode)
 
-**If GitHub Release was created:**
-Display the release URL:
-```
-GitHub Release: https://github.com/owner/repo/releases/tag/vX.Y.Z
+- CHANGELOG.md: updated
+- Version files: <list or "none">
+- Commit: <hash> chore(release): <tag>
+- PR: <url>                       (release PR mode)
+- Tag: <tag> pushed               (direct / tag only mode)
+- GitHub Release: <url or "skipped">
+Next step: <what the user should do next, if anything>
 ```
 
 ## Error Handling
 
-**Uncommitted changes detected:**
-- Message: "Error: Uncommitted changes detected. Please commit or stash changes before release."
-- Exit without making any changes
+- **Push rejected in direct mode** (e.g. protected branch): the commit and tag exist only locally. Explain this, and suggest deleting the local tag with `git tag -d <tag>` and rerunning without `--direct`. Do not reset or rewrite history.
+- **Push fails for other reasons**: show the error and the exact command to retry.
+- **PR creation fails**: the branch is already pushed; show the compare URL so the user can open the PR manually.
+- **GitHub Release creation fails**: the tag is already pushed; show `gh release create <tag>` for a manual retry and mention common causes (`gh auth login`, permissions, network).
 
-**No commits since last tag:**
-- Message: "Warning: No new commits since last tag. Nothing to release."
-- Ask user if they want to continue anyway
-
-**Version tag already exists:**
-- Message: "Error: Tag vX.Y.Z already exists. Please choose a different version."
-- Re-prompt for version selection
-
-**Push fails:**
-- Message: "Error: Failed to push changes. Please check your remote configuration and try: git push && git push origin vX.Y.Z"
-- Tag and commit are created locally but not pushed
-
-**GitHub Release creation fails:**
-- Message: "Warning: Failed to create GitHub Release. The tag vX.Y.Z was created successfully. You can create the release manually with: gh release create vX.Y.Z"
-- Git tag and CHANGELOG are updated successfully
-- User can create the release manually later
-- Common causes:
-  - Not authenticated with GitHub (`gh auth login`)
-  - No permission to create releases
-  - Network issues
+Each step changes state that later steps depend on. If a step fails, stop and report exactly which steps completed.
 
 ## Important Guidelines
 
-- **DO** verify working directory is clean before starting
-- **DO** check gh CLI availability and offer GitHub Release option when available
-- **DO** filter out article-only commits (posts/, articles/ directories)
-- **DO** preserve existing CHANGELOG.md content
-- **DO** use Keep a Changelog format
-- **DO** create annotated tags (not lightweight tags)
-- **DO** push both commit and tag together
-- **DO** make GitHub Release creation optional (gracefully handle when gh unavailable or user declines)
-- **DO NOT** proceed if uncommitted changes exist
-- **DO NOT** include emojis in CHANGELOG entries
-- **DO NOT** add "Generated with Claude Code" or "Co-Authored-By" footers to commits
-- **DO NOT** modify commit history
-- **DO NOT** require gh CLI (must work without it)
-
-## Example Output
-
-**For a release from v1.0.0 to v1.0.1:**
-
-```markdown
-## [1.0.1] - 2024-12-15
-
-### Added
-- user authentication with OAuth2
-- dark mode toggle in settings
-
-### Fixed
-- null pointer exception in login flow
-- memory leak in WebSocket connection
-
-### Changed
-- improve error messages for API failures
-```
-
-## Notes
-
-- Article-related commits (only touching posts/ or articles/) are automatically excluded
-- Conventional Commit types are mapped to Keep a Changelog categories
-- Version numbers follow Semantic Versioning (semver)
-- CHANGELOG follows Keep a Changelog format
-- Process is atomic: if any step fails, previous steps may need manual cleanup
-- GitHub Release creation is optional and requires gh CLI
-- The workflow gracefully degrades to Git tag only when gh is unavailable
-- GitHub Release uses the same CHANGELOG content (without version header)
-- Authentication with GitHub is required for release creation (`gh auth login`)
+- **DO** confirm the draft entry, version, and version files before any commit, tag, or push
+- **DO** move the `[Unreleased]` contents into the new version and leave an empty `[Unreleased]`
+- **DO** create annotated tags
+- **DO** work without GitHub CLI (plain git fallback)
+- **DO NOT** push to the default branch unless `--direct` is given
+- **DO NOT** use `--force`, `--no-verify`, `git reset`, `git commit --amend`, or rebase
+- **DO NOT** include emojis anywhere
+- **DO NOT** add "Generated with Claude Code", "Co-Authored-By", or similar footers to commits, PRs, or releases

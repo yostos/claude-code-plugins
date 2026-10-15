@@ -12,7 +12,7 @@
     {
       "name": "simple-commit",
       "source": "./plugins/simple-commit",
-      "description": "Analyze staged changes and auto-generate Conventional Commits messages"
+      "description": "Auto-generate Conventional Commits messages and prepare Keep a Changelog releases"
     },
     {
       "name": "pdf-processor",
