@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Plugins](https://img.shields.io/badge/plugins-5-green.svg)](#plugins)
 
-A collection of plugins that extend Claude Code with decision support, commit automation, PDF processing, and jrnl CLI integration.
+A collection of plugins that extend Claude Code with decision support, commit automation, and PDF processing.
 
 ## Plugins
 
@@ -32,12 +32,6 @@ Merges multiple PDFs, runs OCR with Tesseract, and applies table of contents / b
 
 [Documentation](./plugins/pdf-processor/README.md)
 
-### jrnl-cli - jrnl CLI Wrapper
-
-Runs [jrnl](https://jrnl.sh/) commands from natural language requests -- create and search journal entries without a fixed tag scheme or workflow. A thin command translator, not a journaling framework.
-
-[Documentation](./plugins/jrnl-cli/README.md)
-
 ## Installation
 
 Requires [Claude Code](https://claude.com/claude-code).
@@ -47,7 +41,6 @@ Requires [Claude Code](https://claude.com/claude-code).
 claude plugin add yostos/claude-code-plugins/plugins/magi
 claude plugin add yostos/claude-code-plugins/plugins/simple-commit
 claude plugin add yostos/claude-code-plugins/plugins/pdf-processor
-claude plugin add yostos/claude-code-plugins/plugins/jrnl-cli
 ```
 
 See each plugin's README for prerequisites and detailed usage.

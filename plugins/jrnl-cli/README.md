@@ -1,5 +1,7 @@
 # jrnl-cli
 
+**Unmaintained (2026-10-15).** The author no longer uses jrnl, so this plugin is no longer maintained and has been removed from the marketplace listing. There is no replacement plugin. The skill should keep working as long as the jrnl CLI does not change, and the files are kept for reference and for anyone who wants to fork it.
+
 A thin Claude Code skill that runs [jrnl](https://jrnl.sh/) CLI commands on request.
 
 ## Overview
@@ -15,8 +17,10 @@ If you are looking for the handoff/restore/status workflow that used to live in 
 
 ## Installation
 
+This plugin is not listed in the marketplace. To use it, clone this repository and load the plugin directory:
+
 ```bash
-claude plugin add yostos/claude-code-plugins/plugins/jrnl-cli
+claude --plugin-dir /path/to/claude-code-plugins/plugins/jrnl-cli
 ```
 
 ## Usage
